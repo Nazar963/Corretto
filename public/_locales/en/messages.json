@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "Corretto"
+  },
+  "extDescription": {
+    "message": "Rewrite text in any field into three clearer alternatives using your own LLM key."
+  }
+}

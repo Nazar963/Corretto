@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.*
+!.env.example
+secrets/
+
+# Claude Code personal overrides
+.claude/settings.local.json
+
+# Obsidian local settings
+docs/.obsidian/
+
+# Common build/dependency artifacts
+node_modules/
+.venv/
+__pycache__/
+dist/
+build/
+.DS_Store
+
+# WXT / test output
+.output/
+.wxt/
+playwright-report/
+test-results/

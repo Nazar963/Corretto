@@ -1,0 +1,19 @@
+# Knowledge Index
+
+Entry point for Claude Code and for humans. Keep this file short: it points to notes, it does not contain them.
+
+## Project
+**Corretto** — cross-browser extension that rewrites text in any field into 3 alternatives (minimal fix / more fluid / more formal) using the user's own LLM key.
+
+## Notes
+- Requirements: [product](requirements/product.md)
+- Architecture: [system](architecture/system.md)
+- Decisions (ADR, all proposed): [0001 WXT](adr/0001-wxt-framework.md) · [0002 background calls](adr/0002-llm-calls-in-background.md) · [0003 providers](adr/0003-provider-adapters.md) · [0004 output](adr/0004-output-contract.md) · [0005 replacement](adr/0005-text-replacement.md) · [0006 UI isolation](adr/0006-ui-isolation.md) · [0007 permissions](adr/0007-permissions.md) · [0008 privacy](adr/0008-privacy.md) · [0009 sensitive fields](adr/0009-sensitive-fields.md) · [0010 button visibility](adr/0010-button-visibility.md)
+- Features: _none yet_
+- Operations: [testing](operations/testing.md)
+- Current status: [status/current.md](status/current.md) · [roadmap](status/roadmap.md)
+
+## Retrieval rules
+- Changing behaviour of a feature: read the requirement, the feature note and the relevant ADRs.
+- Changing deployment: read operations/deployment.md.
+- Code, migrations and tests win over notes; report contradictions.

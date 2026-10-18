@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(docs/status/**)",
+      "Edit(docs/features/**)",
+      "Edit(docs/architecture/**)",
+      "Edit(docs/operations/**)"
+    ],
+    "ask": [
+      "Edit(docs/adr/**)",
+      "Edit(docs/requirements/**)",
+      "Edit(CLAUDE.md)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.staging)",
+      "Read(./.env.production)",
+      "Read(./secrets/**)",
+      "Edit(./.env)",
+      "Edit(./.env.local)",
+      "Edit(./.env.staging)",
+      "Edit(./.env.production)"
+    ]
+  }
+}
