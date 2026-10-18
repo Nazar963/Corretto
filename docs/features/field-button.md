@@ -8,7 +8,7 @@ Covers [FR-001–FR-003](../requirements/product.md) for `<textarea>` and `<inpu
 - Eligibility and exclusions: `lib/fields.ts` (`isEligibleField`). Minimum length: 3 words **or** 15 non-space characters (`DEFAULT_MINIMUM`); configurable in slice 7.
 - Button: closed Shadow DOM under a `<corretto-button>` host, `position: fixed`, bottom-right inside the field, clear of borders/scrollbars, vertically centred for single-line inputs (`lib/button.ts`). `mousedown` is prevented so focus and selection stay in the field; `tabIndex = -1`.
 - Hides 2 s after blur (`HIDE_DELAY_MS`), immediately when text drops below the minimum or the field scrolls off-screen.
-- Click does nothing yet; popup arrives in slice 2.
+- Click starts the [rewrite flow](rewrite-flow.md).
 
 ## Evidence
 - Unit: `tests/unit/fields.test.ts`, `tests/unit/button.test.ts`, `tests/unit/controller.test.ts`.

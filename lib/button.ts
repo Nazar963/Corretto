@@ -1,6 +1,8 @@
 // In-page button rendered in a closed Shadow DOM (docs/adr/0006-ui-isolation.md),
 // anchored to the field's bottom-right corner (docs/adr/0010-button-visibility.md).
 
+import { SHADOW_MODE } from './shadow';
+
 export const BUTTON_SIZE = 24;
 const GAP = 4;
 
@@ -108,7 +110,7 @@ export class FieldButton {
       height: `${BUTTON_SIZE}px`,
       display: 'none',
     });
-    const root = this.host.attachShadow({ mode: 'closed' });
+    const root = this.host.attachShadow({ mode: SHADOW_MODE });
     const style = document.createElement('style');
     style.textContent = STYLE;
     root.append(style);

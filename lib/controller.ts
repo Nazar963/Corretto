@@ -39,12 +39,11 @@ export function startController({ label, onActivate, signal }: ControllerOptions
 
   listen('focusin', (event) => {
     const target = eventTarget(event);
-    if (target === button.host) return;
+    // Focus moving to a non-field (another control, our own UI) must not cancel a pending hide.
+    if (!isEligibleField(target)) return;
     cancelHide();
-    if (isEligibleField(target)) {
-      current = target;
-      evaluate();
-    }
+    current = target;
+    evaluate();
   });
 
   listen('focusout', (event) => {

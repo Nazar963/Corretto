@@ -1,15 +1,18 @@
 # Current Project Status
 
 ## Current milestone
-Slice 1 — field detector and button (see [roadmap](roadmap.md)).
+Slice 2 — popup, replacement and undo (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
 - Slice 0 scaffold (commit 58de202, merged to `main`): WXT + TypeScript, ESLint, Vitest, Playwright, CI workflow, placeholder icons, `en` locale.
   Evidence: `npm run validate` exit 0 on 2026-10-18 — lint clean, typecheck clean, `tests/unit/locales.test.ts` 1 passed, Chrome and Firefox builds succeed, `web-ext lint` 0 errors / 1 warning, `tests/e2e/extension-loads.spec.ts` 1 passed.
 
-- Slice 1 field button (branch `slice-1-field-button`): [feature note](../features/field-button.md).
+- Slice 1 field button (commit fc8040d, merged to `main`): [feature note](../features/field-button.md).
   Evidence: `npm run validate` exit 0 on 2026-10-18 — 43 unit tests, 19 e2e tests passed, `web-ext lint` 0 errors / 1 known warning.
+
+- Slice 2 rewrite flow with mock provider (branch `slice-2-popup-replace`): [feature note](../features/rewrite-flow.md). Includes a real React fixture for FR-007 AC-001 (dev deps approved by the user 2026-10-18).
+  Evidence: `npm run validate` exit 0 on 2026-10-18 — 55 unit, 34 e2e passed, `web-ext lint` 0 errors / 1 known warning.
 
 ## In progress
 _Nothing._
@@ -22,7 +25,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 2 — mock provider, popup with 3 options, replacement + undo for textarea/input (FR-004, 006–008).
+1. Slice 3 — background messaging hardening, settings page, OpenAI-compatible adapter, error states (FR-009, FR-011).
 
 ## Last reviewed
-2026-10-18 — slices 0 and 1 checked with `npm run validate`.
+2026-10-18 — slices 0–2 checked with `npm run validate`.

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Corretto fixture: controlled input</title></head>
+<body>
+  <!-- Mimics a framework-controlled field: state is only updated from input events,
+       and every render writes state back into the DOM. A real React fixture is a follow-up. -->
+  <textarea id="controlled" rows="4" cols="60"></textarea>
+  <script>
+    const field = document.getElementById('controlled');
+    window.appState = { value: '' };
+    field.addEventListener('input', () => {
+      window.appState.value = field.value;
+      field.value = window.appState.value; // re-render
+    });
+  </script>
+</body>
+</html>

@@ -7,5 +7,35 @@
   },
   "buttonLabel": {
     "message": "Rewrite with Corretto"
+  },
+  "panelLabel": {
+    "message": "Corretto suggestions"
+  },
+  "toneMinimal": {
+    "message": "Minimal fix"
+  },
+  "toneFluent": {
+    "message": "More fluid"
+  },
+  "toneFormal": {
+    "message": "More formal"
+  },
+  "loading": {
+    "message": "Rewriting…"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "replaced": {
+    "message": "Replaced"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "errorGeneric": {
+    "message": "Something went wrong. Please try again."
+  },
+  "retry": {
+    "message": "Retry"
   }
 }

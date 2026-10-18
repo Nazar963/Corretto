@@ -1,8 +1,10 @@
 import { chromium, test as base, type BrowserContext } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { FIXTURE_BUNDLE_DIR } from './global-setup';
 
-const extensionPath = path.resolve('.output/chrome-mv3');
+// The e2e build opens shadow roots so tests can inspect the UI (lib/shadow.ts).
+const extensionPath = path.resolve('.output/chrome-mv3-e2e');
 const fixturesDir = path.resolve('tests/e2e/fixtures');
 
 /** Fixture pages are served from this origin through request routing. */
@@ -16,9 +18,10 @@ export const test = base.extend<{ context: BrowserContext }>({
       args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
     });
     await context.route(`${FIXTURE_ORIGIN}/**`, async (route) => {
-      const name = new URL(route.request().url()).pathname.slice(1);
-      const body = await readFile(path.join(fixturesDir, path.basename(name)), 'utf8');
-      await route.fulfill({ contentType: 'text/html', body });
+      const name = path.basename(new URL(route.request().url()).pathname);
+      const isScript = name.endsWith('.js');
+      const body = await readFile(path.join(isScript ? FIXTURE_BUNDLE_DIR : fixturesDir, name), 'utf8');
+      await route.fulfill({ contentType: isScript ? 'text/javascript' : 'text/html', body });
     });
     // Content scripts register with the service worker; wait for it before tests navigate.
     if (context.serviceWorkers().length === 0) await context.waitForEvent('serviceworker');

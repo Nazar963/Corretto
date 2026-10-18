@@ -63,6 +63,16 @@ describe('controller', () => {
     expect(visible()).toBe(false);
   });
 
+  it('still hides when focus moves to a non-field element', () => {
+    const field = document.querySelector<HTMLTextAreaElement>('#t')!;
+    field.value = 'this text is long enough';
+    document.body.insertAdjacentHTML('beforeend', '<button id="b">x</button>');
+    field.focus();
+    document.querySelector<HTMLButtonElement>('#b')!.focus();
+    vi.advanceTimersByTime(HIDE_DELAY_MS + 100);
+    expect(visible()).toBe(false);
+  });
+
   it('cancels the pending hide when the field is refocused', () => {
     const field = document.querySelector<HTMLTextAreaElement>('#t')!;
     field.value = 'this text is long enough';
