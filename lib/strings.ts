@@ -24,6 +24,7 @@ export const STRING_KEYS = [
   'error_too_long',
   'error_http',
   'error_unknown',
+  'error_changed',
 ] as const;
 
 export type Strings = Record<(typeof STRING_KEYS)[number], string>;

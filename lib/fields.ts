@@ -2,6 +2,8 @@
 // See docs/requirements/product.md FR-001..FR-003 and docs/adr/0009-sensitive-fields.md.
 
 export type TextField = HTMLTextAreaElement | HTMLInputElement;
+/** A text field, or the editing host of a contenteditable region (Gmail, LinkedIn, ...). */
+export type Field = TextField | HTMLElement;
 
 /** Input types that hold free-form prose. Everything else is excluded (FR-003). */
 const SUPPORTED_INPUT_TYPES = new Set(['text', 'search']);
@@ -26,24 +28,33 @@ function hasSensitiveAutocomplete(el: Element): boolean {
     .some((token) => token.startsWith('cc-') || SENSITIVE_AUTOCOMPLETE.has(token));
 }
 
-/**
- * Whether `el` is a `<textarea>` or text-like `<input>` the button may attach to.
- * contenteditable support arrives in slice 4.
- */
-export function isEligibleField(el: Element | null): el is TextField {
+export function isTextField(el: Element): el is TextField {
+  return el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement;
+}
+
+/** The outermost contenteditable element: focus and input events target it. */
+export function isEditingHost(el: Element): el is HTMLElement {
+  if (!(el instanceof HTMLElement) || !el.isContentEditable) return false;
+  const parent = el.parentElement;
+  return !parent || !parent.isContentEditable;
+}
+
+/** Whether the button may attach to `el` (FR-001, FR-003). */
+export function isEligibleField(el: Element | null): el is Field {
   if (!el) return false;
-  let field: TextField;
-  if (el instanceof HTMLTextAreaElement) {
-    field = el;
-  } else if (el instanceof HTMLInputElement) {
-    // `type` reflects "text" for missing or unknown values, matching browser behaviour.
-    if (!SUPPORTED_INPUT_TYPES.has(el.type)) return false;
-    field = el;
-  } else {
-    return false;
+  if (isEditingHost(el)) {
+    return el.getAttribute('aria-readonly') !== 'true' && el.getAttribute('aria-disabled') !== 'true';
   }
-  if (field.readOnly || field.disabled) return false;
-  return !hasSensitiveAutocomplete(field);
+  if (!isTextField(el)) return false;
+  // `type` reflects "text" for missing or unknown values, matching browser behaviour.
+  if (el instanceof HTMLInputElement && !SUPPORTED_INPUT_TYPES.has(el.type)) return false;
+  if (el.readOnly || el.disabled) return false;
+  return !hasSensitiveAutocomplete(el);
+}
+
+/** The field's whole text; contenteditable uses innerText so block breaks become newlines. */
+export function fieldText(field: Field): string {
+  return isTextField(field) ? field.value : field.innerText;
 }
 
 /** True when the text has at least `minWords` words or `minChars` non-space characters. */

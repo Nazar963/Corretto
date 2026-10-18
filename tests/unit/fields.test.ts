@@ -15,6 +15,9 @@ describe('isEligibleField', () => {
     '<input type="search">',
     '<input type="unknown-type">',
     '<input autocomplete="name">',
+    '<div contenteditable="true"></div>',
+    // contenteditable="" is covered in e2e: happy-dom does not treat it as editable, browsers do.
+    '<div contenteditable="plaintext-only"></div>',
   ])('accepts %s', (html) => {
     expect(isEligibleField(make(html))).toBe(true);
   });
@@ -36,10 +39,27 @@ describe('isEligibleField', () => {
     '<input autocomplete="one-time-code">',
     '<input autocomplete="current-password">',
     '<input autocomplete="NEW-PASSWORD">',
-    '<div contenteditable="true"></div>',
     '<select></select>',
   ])('rejects %s', (html) => {
     expect(isEligibleField(make(html))).toBe(false);
+  });
+
+  it('accepts only the editing host, not its descendants', () => {
+    const host = make('<div contenteditable="true"><p>text</p></div>');
+    document.body.append(host);
+    expect(isEligibleField(host)).toBe(true);
+    expect(isEligibleField(host.querySelector('p'))).toBe(false);
+  });
+
+  it.each([
+    '<div contenteditable="false"></div>',
+    '<div contenteditable="true" aria-readonly="true"></div>',
+    '<div contenteditable="true" aria-disabled="true"></div>',
+    '<div></div>',
+  ])('rejects %s', (html) => {
+    const el = make(html);
+    document.body.append(el);
+    expect(isEligibleField(el)).toBe(false);
   });
 
   it('rejects null', () => {

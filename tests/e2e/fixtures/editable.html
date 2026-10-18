@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Corretto fixture: contenteditable</title>
+  <style>[contenteditable], .editor { border: 1px solid #999; min-height: 80px; width: 480px; margin: 8px 0; padding: 4px; }</style>
+</head>
+<body>
+  <div id="plain" contenteditable="true"></div>
+  <div id="empty-attr" contenteditable=""></div>
+  <div id="plaintext" contenteditable="plaintext-only"></div>
+  <div id="rich" contenteditable="true"><p>Hello <b>wrld</b> how</p><p>are you today</p></div>
+  <div id="readonly" contenteditable="true" aria-readonly="true">this editor is marked read only</div>
+
+  <!-- Mimics a framework editor (React/ProseMirror-like): it syncs its model from the DOM on
+       every input event and re-renders, replacing all child nodes. -->
+  <div id="model" contenteditable="true" class="editor"></div>
+  <script>
+    const editor = document.getElementById('model');
+    window.editorModel = { value: '', renders: 0 };
+    const render = () => {
+      editor.replaceChildren(...window.editorModel.value.split('\n').map((line) => {
+        const p = document.createElement('p');
+        p.textContent = line || '​';
+        return p;
+      }));
+      window.editorModel.renders++;
+    };
+    editor.addEventListener('input', () => {
+      window.editorModel.value = editor.innerText.replace(/​/g, '');
+      const selection = getSelection();
+      const caretAtEnd = selection.rangeCount && editor.contains(selection.anchorNode);
+      render();
+      if (caretAtEnd) {
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    });
+  </script>
+
+  <iframe id="frame" src="/editable-frame.html" width="500" height="160"></iframe>
+</body>
+</html>

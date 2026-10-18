@@ -1,8 +1,8 @@
 // Button click -> background rewrite -> popup -> replacement -> undo toast.
 
-import { applyRewrite, canUndo, captureTarget, undoReplacement, type Target } from './edit';
+import { captureTarget, type Target } from './edit';
 import { errorAction } from './errors';
-import { isEligibleField } from './fields';
+import { fieldText, isEligibleField, type Field } from './fields';
 import type { RewriteResponse } from './messages';
 import type { DismissReason, Panel } from './panel';
 import type { Strings } from './strings';
@@ -26,30 +26,35 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
     inFlight = null;
   };
 
-  const restoreSelection = (target: Target) => {
-    target.field.focus();
-    target.field.setSelectionRange(target.selectionStart, target.selectionEnd);
-  };
-
   const onDismiss = (target: Target) => (reason: DismissReason) => {
     stop();
     // Outside click: the user is going somewhere else, do not pull focus back.
-    if (reason === 'escape') restoreSelection(target);
+    if (reason === 'escape') target.restoreSelection();
   };
+
+  const showChanged = (field: Field) =>
+    panel.showError(field, strings.error_changed, {
+      action: { label: strings.retry, run: () => activate(field) },
+      onDismiss: () => {},
+    });
 
   const pick = (target: Target, text: string) => {
     panel.close();
-    const replacement = applyRewrite(target, text);
-    const { field } = replacement;
+    const replacement = target.replace(text);
+    const { field } = target;
+    if (!replacement) {
+      showChanged(field);
+      return;
+    }
     // Any later edit makes undo unsafe (FR-008 AC-002): close the toast.
     const onEdit = () => {
-      if (!canUndo(replacement)) panel.close();
+      if (!replacement.canUndo()) panel.close();
     };
     field.addEventListener('input', onEdit);
     panel.showToast(field, {
       onUndo: () => {
         field.removeEventListener('input', onEdit);
-        undoReplacement(replacement);
+        replacement.undo();
         panel.close();
       },
       onClose: () => field.removeEventListener('input', onEdit),
@@ -64,7 +69,7 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
       onCancel: () => {
         stop();
         panel.close();
-        restoreSelection(target);
+        target.restoreSelection();
       },
       onDismiss: onDismiss(target),
     });
@@ -106,8 +111,10 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
     });
   };
 
-  return (field) => {
-    if (!isEligibleField(field) || field.value.trim() === '') return;
+  function activate(field: HTMLElement) {
+    if (!isEligibleField(field) || fieldText(field).trim() === '') return;
     void run(captureTarget(field));
-  };
+  }
+
+  return activate;
 }

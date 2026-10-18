@@ -27,3 +27,9 @@ Order: (1) `document.execCommand('insertText')` on the saved selection; (2) for 
 ## Related
 - [Requirements](../requirements/product.md)
 - [Architecture](../architecture/system.md)
+
+## Refinements (slice 4, still proposed)
+- `execCommand` does not fire `beforeinput`, so editors see the change through `input`/DOM mutations.
+- Before replacing, check the field text (and, for contenteditable, the captured Range) is unchanged since capture; otherwise do nothing and ask the user to retry.
+- contenteditable undo: try `execCommand('undo')`; if the text is not restored (editors that re-render break the native stack), insert the captured original text as plain text.
+- Tests: `tests/e2e/contenteditable.spec.ts`, `tests/unit/edit.test.ts`.

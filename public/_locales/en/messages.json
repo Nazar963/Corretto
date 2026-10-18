@@ -135,5 +135,8 @@
   },
   "options_privacy": {
     "message": "Your key stays in this browser (it is not synced) and is sent only to the provider you choose. Corretto has no server and collects no data."
+  },
+  "error_changed": {
+    "message": "The text changed while Corretto was working. Try again."
   }
 }

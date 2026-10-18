@@ -1,6 +1,6 @@
 # Field button (slice 1)
 
-Covers [FR-001–FR-003](../requirements/product.md) for `<textarea>` and `<input type=text|search>`. contenteditable comes in slice 4.
+Covers [FR-001–FR-003](../requirements/product.md) for `<textarea>` and `<input type=text|search>`; contenteditable since slice 4, see [contenteditable](contenteditable.md).
 
 ## Behaviour
 - Content script on `<all_urls>`, all frames, `document_idle` (`entrypoints/content.ts`).

@@ -82,6 +82,16 @@ test.describe('FR-004 / FR-007: replacement', () => {
     });
   }
 
+  test('typing while the provider works blocks the stale replacement', async ({ page, provider }) => {
+    provider.behaviour.delayMs = 1000;
+    await openResults(page);
+    await expect(panel(page).getByText('Rewriting…')).toBeVisible();
+    await page.keyboard.type(' too');
+    await option(page, /More fluid/).click();
+    await expect(panel(page).getByText('The text changed')).toBeVisible();
+    await expect(page.locator('#textarea')).toHaveValue(`${TEXT} too`);
+  });
+
   test('only the selection is sent and replaced', async ({ page }) => {
     await page.locator('#textarea').fill(TEXT);
     await page.locator('#textarea').evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(6, 13));

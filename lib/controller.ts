@@ -2,7 +2,7 @@
 // Listens at document level, so fields added after load need no extra observer (FR-001 AC-002).
 
 import { FieldButton } from './button';
-import { DEFAULT_MINIMUM, isEligibleField, meetsMinimumLength, type TextField } from './fields';
+import { DEFAULT_MINIMUM, fieldText, isEligibleField, meetsMinimumLength, type Field } from './fields';
 
 /** How long the button stays after the field loses focus. */
 export const HIDE_DELAY_MS = 2000;
@@ -21,13 +21,13 @@ function eventTarget(event: Event): Element | null {
 
 export function startController({ label, onActivate, signal }: ControllerOptions): FieldButton {
   const button = new FieldButton(label, onActivate);
-  let current: TextField | null = null;
+  let current: Field | null = null;
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
   const cancelHide = () => clearTimeout(hideTimer);
 
   const evaluate = () => {
-    if (current && current.isConnected && meetsMinimumLength(current.value, DEFAULT_MINIMUM)) {
+    if (current && current.isConnected && meetsMinimumLength(fieldText(current), DEFAULT_MINIMUM)) {
       button.show(current);
     } else {
       button.hide();
