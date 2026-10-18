@@ -169,12 +169,10 @@ export class Panel {
   showError(
     anchor: HTMLElement,
     message: string,
-    handlers: { onRetry: () => void; onDismiss: (reason: DismissReason) => void },
+    handlers: { action: { label: string; run: () => void } | null; onDismiss: (reason: DismissReason) => void },
   ) {
-    const row = el('div', { className: 'row' }, [
-      el('span', { className: 'grow', text: message }),
-      actionButton(this.strings.retry, handlers.onRetry),
-    ]);
+    const row = el('div', { className: 'row' }, [el('span', { className: 'grow', text: message })]);
+    if (handlers.action) row.append(actionButton(handlers.action.label, handlers.action.run));
     row.setAttribute('role', 'alert');
     this.open('popup', anchor, [row], handlers.onDismiss);
   }

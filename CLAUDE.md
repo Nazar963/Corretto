@@ -7,8 +7,8 @@ Cross-browser extension (Chrome, Brave, Edge, Firefox). A button on text fields 
 
 ## Stack
 - WXT 0.21 + TypeScript 6.0 (Manifest V3 for all browsers). No backend, no database.
-- Injected UI: vanilla TS in a closed Shadow DOM. Extension pages: Preact (added when the first page is built).
-- Tests: Vitest + happy-dom (`tests/unit/`), Playwright on Chromium with the built extension (`tests/e2e/`), `web-ext lint` for Firefox.
+- Injected UI: vanilla TS in a closed Shadow DOM. Extension pages: Preact 10 (`entrypoints/options/`).
+- Tests: Vitest + happy-dom (`tests/unit/`), Playwright on Chromium with the e2e build and a local mock provider (`tests/e2e/`), `web-ext lint` for Firefox. See `docs/operations/testing.md`.
 - Package manager: npm. Node >= 22.
 - TypeScript is pinned to ~6.0 because typescript-eslint 8 does not support TypeScript 7 yet.
 

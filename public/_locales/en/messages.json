@@ -32,10 +32,108 @@
   "undo": {
     "message": "Undo"
   },
-  "errorGeneric": {
-    "message": "Something went wrong. Please try again."
-  },
   "retry": {
     "message": "Retry"
+  },
+  "openSettings": {
+    "message": "Open settings"
+  },
+  "error_not_configured": {
+    "message": "Choose a provider and model in Corretto settings."
+  },
+  "error_no_key": {
+    "message": "Add your API key in Corretto settings to start."
+  },
+  "error_permission": {
+    "message": "Corretto needs permission to contact your provider. Open settings and save again."
+  },
+  "error_invalid_key": {
+    "message": "Your API key was rejected. Check it in settings."
+  },
+  "error_model_not_found": {
+    "message": "The model was not found. Check the model name in settings."
+  },
+  "error_rate_limited": {
+    "message": "The provider's rate limit was reached. Wait a moment, then retry."
+  },
+  "error_timeout": {
+    "message": "The provider took too long to answer."
+  },
+  "error_network": {
+    "message": "Couldn't reach the provider. Check your connection or the server address."
+  },
+  "error_bad_output": {
+    "message": "The model's answer couldn't be read. Retry, or try another model."
+  },
+  "error_too_long": {
+    "message": "This text is too long (max 5,000 characters). Select a shorter part."
+  },
+  "error_http": {
+    "message": "The provider returned an error. Please retry."
+  },
+  "error_unknown": {
+    "message": "Something went wrong. Please try again."
+  },
+  "options_title": {
+    "message": "Corretto settings"
+  },
+  "options_lead": {
+    "message": "Choose an AI provider and paste your own API key. Several providers have a free tier."
+  },
+  "options_provider": {
+    "message": "Provider"
+  },
+  "options_freeTier": {
+    "message": "free tier"
+  },
+  "options_baseUrl": {
+    "message": "Server address"
+  },
+  "options_baseUrlHint": {
+    "message": "Base URL of an OpenAI-compatible API, ending before /chat/completions."
+  },
+  "options_apiKey": {
+    "message": "API key"
+  },
+  "options_getKey": {
+    "message": "Get a key from $PROVIDER$",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_showKey": {
+    "message": "Show"
+  },
+  "options_hideKey": {
+    "message": "Hide"
+  },
+  "options_model": {
+    "message": "Model"
+  },
+  "options_modelHint": {
+    "message": "Leave as suggested unless you know which model you want."
+  },
+  "options_save": {
+    "message": "Save"
+  },
+  "options_test": {
+    "message": "Test connection"
+  },
+  "options_testing": {
+    "message": "Testing…"
+  },
+  "options_testOk": {
+    "message": "Connection works."
+  },
+  "options_saved": {
+    "message": "Saved."
+  },
+  "options_permissionDenied": {
+    "message": "Permission was not granted, so Corretto can't contact this provider."
+  },
+  "options_privacy": {
+    "message": "Your key stays in this browser (it is not synced) and is sent only to the provider you choose. Corretto has no server and collects no data."
   }
 }

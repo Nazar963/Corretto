@@ -1,6 +1,6 @@
 # Rewrite flow (slice 2)
 
-Covers [FR-004, FR-006, FR-007, FR-008](../requirements/product.md) for `<textarea>` and `<input type=text|search>`. Uses a **mock provider**; real providers and specific error messages (FR-009) come in slice 3.
+Covers [FR-004, FR-006, FR-007, FR-008](../requirements/product.md) for `<textarea>` and `<input type=text|search>`. Slice 2 used a mock provider; since slice 3 requests go to the configured provider, see [providers and settings](provider-settings.md).
 
 ## Behaviour
 - Button click → `captureTarget` takes the non-blank selection, else the whole value (`lib/edit.ts`).
@@ -9,7 +9,7 @@ Covers [FR-004, FR-006, FR-007, FR-008](../requirements/product.md) for `<textar
 - Replacement (`replaceRange`): `execCommand('insertText')` first, fallback `setRangeText` + `input` event ([ADR-0005](../adr/0005-text-replacement.md)).
 - Toast "Replaced · Undo" for 10 s; Undo restores text and original selection; any later edit closes it. Native Ctrl+Z also works (insertText path).
 - All model text is rendered with `textContent`; no `innerHTML` anywhere in injected UI.
-- Error state currently shows one generic message with Retry.
+- Error states: see [providers and settings](provider-settings.md).
 
 ## Fix included
 - Focusing a non-field element after leaving a field no longer cancels the button's pending hide (`lib/controller.ts`; regression test in `tests/unit/controller.test.ts`).

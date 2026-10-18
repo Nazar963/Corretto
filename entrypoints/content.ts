@@ -1,7 +1,8 @@
 import { startController } from '@/lib/controller';
 import { createRewriteFlow } from '@/lib/flow';
-import type { RewriteRequest, RewriteResponse } from '@/lib/messages';
+import type { OpenSettingsRequest } from '@/lib/messages';
 import { Panel } from '@/lib/panel';
+import { requestRewrite } from '@/lib/rewrite-client';
 import { loadStrings } from '@/lib/strings';
 
 export default defineContentScript({
@@ -17,8 +18,8 @@ export default defineContentScript({
       onActivate: createRewriteFlow({
         panel,
         strings,
-        request: (text) =>
-          browser.runtime.sendMessage({ type: 'corretto/rewrite', text } satisfies RewriteRequest) as Promise<RewriteResponse>,
+        request: requestRewrite,
+        openSettings: () => void browser.runtime.sendMessage({ type: 'corretto/open-settings' } satisfies OpenSettingsRequest),
       }),
       signal: ctx.signal,
     });

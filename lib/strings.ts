@@ -10,8 +10,20 @@ export const STRING_KEYS = [
   'cancel',
   'replaced',
   'undo',
-  'errorGeneric',
   'retry',
+  'openSettings',
+  'error_not_configured',
+  'error_no_key',
+  'error_permission',
+  'error_invalid_key',
+  'error_model_not_found',
+  'error_rate_limited',
+  'error_timeout',
+  'error_network',
+  'error_bad_output',
+  'error_too_long',
+  'error_http',
+  'error_unknown',
 ] as const;
 
 export type Strings = Record<(typeof STRING_KEYS)[number], string>;
