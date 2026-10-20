@@ -23,6 +23,13 @@ test.describe('provider request (FR-005, FR-015)', () => {
     expect(request!.body.messages.at(-1)).toEqual({ role: 'user', content: TEXT });
   });
 
+  test('a local server preset rewrites without a key', async ({ page, worker, provider }) => {
+    await configure(worker, { providerId: 'ollama', apiKey: '', model: 'mock-model', baseUrl: provider.baseUrl });
+    await start(page);
+    await expect(panel(page).getByRole('button', { name: /More fluid/ })).toBeVisible();
+    expect(provider.requests[0]!.headers.authorization).toBeUndefined();
+  });
+
   test('Cancel aborts the request at the provider', async ({ page, provider }) => {
     provider.behaviour.delayMs = 3000;
     await start(page);

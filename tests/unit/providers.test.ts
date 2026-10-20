@@ -1,9 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readErrorDetail, requestRewrites } from '@/lib/providers/openai';
+import { listModels, readErrorDetail, requestRewrites } from '@/lib/providers/index';
 import { SYSTEM_PROMPT } from '@/lib/prompt';
+import { CLOUD_TIMEOUT_MS } from '@/lib/settings';
 import type { ResolvedProvider } from '@/lib/settings';
 
-const provider: ResolvedProvider = { baseUrl: 'https://api.example.com/v1', apiKey: 'k-123', model: 'm', jsonMode: true };
+const provider: ResolvedProvider = {
+  api: 'openai',
+  baseUrl: 'https://api.example.com/v1',
+  apiKey: 'k-123',
+  model: 'm',
+  jsonMode: true,
+  requiresKey: true,
+  timeoutMs: CLOUD_TIMEOUT_MS,
+};
 const rewrites = { minimal: 'a', fluent: 'b', formal: 'c' };
 
 function reply(content: unknown, status = 200): Response {
@@ -21,7 +30,7 @@ function fakeFetch(...responses: (Response | Error)[]) {
 
 const signal = () => new AbortController().signal;
 
-describe('requestRewrites (contract)', () => {
+describe('OpenAI-compatible adapter (contract)', () => {
   it('sends an OpenAI-compatible request', async () => {
     const fetch = fakeFetch(reply(JSON.stringify(rewrites)));
     await requestRewrites(provider, 'helo', signal(), { fetch });
@@ -152,5 +161,109 @@ describe('provider error detail', () => {
       code: 'http',
       detail: 'Unsupported parameter: response_format',
     });
+  });
+});
+
+describe('Anthropic adapter (contract)', () => {
+  const claude: ResolvedProvider = {
+    api: 'anthropic',
+    baseUrl: 'https://api.anthropic.com/v1',
+    apiKey: 'sk-ant-test-123456',
+    model: 'claude-haiku-5-5',
+    jsonMode: false,
+    requiresKey: true,
+    timeoutMs: CLOUD_TIMEOUT_MS,
+  };
+  const message = (content: unknown[], stop_reason = 'end_turn') =>
+    new Response(JSON.stringify({ type: 'message', content, stop_reason }));
+
+  it('sends a Messages API request with the BYOK browser headers', async () => {
+    const fetch = fakeFetch(message([{ type: 'text', text: JSON.stringify(rewrites) }]));
+    await requestRewrites(claude, 'helo', signal(), { fetch });
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.anthropic.com/v1/messages');
+    expect(init.headers).toEqual({
+      'Content-Type': 'application/json',
+      'x-api-key': 'sk-ant-test-123456',
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    });
+    const body = JSON.parse(init.body as string);
+    expect(body).toEqual({
+      model: 'claude-haiku-5-5',
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: 'helo' }],
+      output_config: { effort: 'low' },
+    });
+    // Rejected on current models: non-default sampling values and manual thinking budgets.
+    expect(body).not.toHaveProperty('temperature');
+    expect(body).not.toHaveProperty('thinking');
+  });
+
+  it('skips thinking blocks and reads the text blocks', async () => {
+    const fetch = fakeFetch(
+      message([
+        { type: 'thinking', thinking: '', signature: 'x' },
+        { type: 'text', text: '{"minimal": "a", ' },
+        { type: 'text', text: '"fluent": "b", "formal": "c"}' },
+      ]),
+    );
+    await expect(requestRewrites(claude, 'x', signal(), { fetch })).resolves.toEqual(rewrites);
+  });
+
+  it('reports a refusal as unreadable output with an explanation', async () => {
+    const fetch = fakeFetch(message([], 'refusal'), message([], 'refusal'));
+    await expect(requestRewrites(claude, 'x', signal(), { fetch })).rejects.toMatchObject({
+      code: 'bad_output',
+      detail: 'The model declined to rewrite this text.',
+    });
+  });
+
+  it.each([
+    [401, 'authentication_error', 'invalid x-api-key', 'invalid_key'],
+    [404, 'not_found_error', 'model: claude-nope', 'model_not_found'],
+    [429, 'rate_limit_error', 'Number of requests has exceeded your rate limit', 'rate_limited'],
+    [529, 'overloaded_error', 'Overloaded', 'http'],
+  ])('maps HTTP %i (%s) with its message', async (status, type, text, code) => {
+    const fetch = fakeFetch(new Response(JSON.stringify({ type: 'error', error: { type, message: text } }), { status }));
+    await expect(requestRewrites(claude, 'x', signal(), { fetch })).rejects.toMatchObject({ code, detail: text });
+  });
+
+  it('lists only Claude models', async () => {
+    const fetch = fakeFetch(
+      new Response(JSON.stringify({ data: [{ id: 'claude-sonnet-5-5' }, { id: 'claude-haiku-5-5' }, { id: 'other' }] })),
+    );
+    await expect(listModels(claude, signal(), { fetch })).resolves.toEqual(['claude-haiku-5-5', 'claude-sonnet-5-5']);
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.anthropic.com/v1/models?limit=100');
+    expect(init.method).toBe('GET');
+  });
+});
+
+describe('listModels (OpenAI-compatible)', () => {
+  it('strips the models/ prefix, drops non-chat models and sorts', async () => {
+    const ids = ['models/gemini-3.5-flash-lite', 'models/gemini-embedding-2', 'models/veo-3.1-generate-preview', 'llama3.2:latest'];
+    const fetch = fakeFetch(new Response(JSON.stringify({ data: ids.map((id) => ({ id })) })));
+    await expect(listModels(provider, signal(), { fetch })).resolves.toEqual(['gemini-3.5-flash-lite', 'llama3.2:latest']);
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/v1/models');
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer k-123' });
+  });
+
+  it('reports an unexpected body as unreadable', async () => {
+    const fetch = fakeFetch(new Response(JSON.stringify({ models: [] })));
+    await expect(listModels(provider, signal(), { fetch })).rejects.toMatchObject({ code: 'bad_output' });
+  });
+});
+
+describe('timeouts', () => {
+  it("uses the provider's own timeout when none is given", async () => {
+    const quick = { ...provider, timeoutMs: 20 };
+    const never = (_url: string | URL | Request, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+      });
+    await expect(requestRewrites(quick, 'x', signal(), { fetch: never })).rejects.toMatchObject({ code: 'timeout' });
   });
 });

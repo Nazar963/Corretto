@@ -1,11 +1,13 @@
 import {
+  isListModelsRequest,
   isOpenSettingsRequest,
   isRewriteRequest,
   isTestConnectionRequest,
   REWRITE_PORT,
+  type ListModelsResponse,
   type RewriteResponse,
 } from '@/lib/messages';
-import { rewrite, type ServiceDeps } from '@/lib/rewrite-service';
+import { availableModels, rewrite, type ServiceDeps } from '@/lib/rewrite-service';
 import { loadSettings } from '@/lib/settings';
 
 /** Short sample used by "Test connection" (FR-011 AC-002). */
@@ -43,6 +45,13 @@ export default defineBackground(() => {
         () => sendResponse({ ok: false, error: { code: 'unknown' } } satisfies RewriteResponse),
       );
       return true; // Keep the channel open for the async response.
+    }
+    if (isListModelsRequest(message) && isExtensionPage(sender)) {
+      availableModels(message.settings, new AbortController().signal, deps).then(
+        sendResponse,
+        () => sendResponse({ ok: false, error: { code: 'unknown' } } satisfies ListModelsResponse),
+      );
+      return true;
     }
     return false;
   });

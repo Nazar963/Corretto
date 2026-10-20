@@ -90,7 +90,7 @@
     "message": "Server address"
   },
   "options_baseUrlHint": {
-    "message": "Base URL of an OpenAI-compatible API, ending before /chat/completions."
+    "message": "Base URL of the API, ending before /chat/completions. Leave empty for the default shown."
   },
   "options_apiKey": {
     "message": "API key"
@@ -146,5 +146,41 @@
         "content": "$1"
       }
     }
+  },
+  "options_keyOptional": {
+    "message": "Optional for a server on this computer."
+  },
+  "options_download": {
+    "message": "Download $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_localHint": {
+    "message": "Start $NAME$ on this computer, then click “Show models” to pick one you have downloaded.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_showModels": {
+    "message": "Show models"
+  },
+  "options_loadingModels": {
+    "message": "Loading models…"
+  },
+  "options_modelsFound": {
+    "message": "Found $COUNT$ models. Pick one in the Model field.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_noModels": {
+    "message": "No models found. For a local server, download a model first."
   }
 }

@@ -55,6 +55,14 @@ export interface TestConnectionRequest {
   settings: Settings;
 }
 
+/** From the options page: list the models the (unsaved) settings can use. */
+export interface ListModelsRequest {
+  type: 'corretto/list-models';
+  settings: Settings;
+}
+
+export type ListModelsResponse = { ok: true; models: string[] } | { ok: false; error: RewriteError };
+
 /** From the content script: content scripts cannot call openOptionsPage themselves. */
 export interface OpenSettingsRequest {
   type: 'corretto/open-settings';
@@ -70,6 +78,10 @@ export function isRewriteRequest(message: unknown): message is RewriteRequest {
 
 export function isTestConnectionRequest(message: unknown): message is TestConnectionRequest {
   return hasType(message, 'corretto/test-connection') && typeof (message as TestConnectionRequest).settings === 'object';
+}
+
+export function isListModelsRequest(message: unknown): message is ListModelsRequest {
+  return hasType(message, 'corretto/list-models') && typeof (message as ListModelsRequest).settings === 'object';
 }
 
 export function isOpenSettingsRequest(message: unknown): message is OpenSettingsRequest {

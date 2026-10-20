@@ -27,3 +27,8 @@ Most providers speak the OpenAI chat-completions format; models change often, so
 ## Related
 - [Requirements](../requirements/product.md)
 - [Architecture](../architecture/system.md)
+
+## Refinements (slice 6, still proposed)
+- Anthropic: the Claude API guidance prefers the official SDK in TypeScript projects. On 2026-10-20 the user chose raw fetch to stay consistent with this ADR (no new dependency, same timeout/cancel/error handling, testable with the mock server).
+- Structure: `lib/providers/common.ts` (shared HTTP/errors), one file per API style, `index.ts` dispatches on the preset's `api` field. Presets also declare `local` (no key, 120 s timeout) and `editableBaseUrl`.
+- Tests: `tests/unit/providers.test.ts`.

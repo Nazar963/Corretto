@@ -1,13 +1,14 @@
 // Settings live in storage.local only, never storage.sync (docs/adr/0008-privacy.md).
 // Only the background and extension pages read them; content scripts never do (ADR-0002).
 
+import type { ApiStyle } from './providers/index';
 import { findPreset, PRESETS } from './providers/presets';
 
 export interface Settings {
   providerId: string;
   apiKey: string;
   model: string;
-  /** Used for the custom provider; presets use their own base URL. */
+  /** Base URL override for presets with an editable URL (custom, local servers); empty = preset default. */
   baseUrl: string;
 }
 
@@ -27,21 +28,38 @@ export async function saveSettings(settings: Settings): Promise<void> {
   await browser.storage.local.set({ [STORAGE_KEY]: settings });
 }
 
+/** NFR performance: cloud providers must answer within 30 s; local models may be much slower. */
+export const CLOUD_TIMEOUT_MS = 30_000;
+export const LOCAL_TIMEOUT_MS = 120_000;
+
 export interface ResolvedProvider {
+  api: ApiStyle;
   baseUrl: string;
   apiKey: string;
   model: string;
   jsonMode: boolean;
+  requiresKey: boolean;
+  timeoutMs: number;
 }
 
 /** Base URL and flags for the chosen provider, or null if the configuration is incomplete. */
 export function resolveProvider(settings: Settings): ResolvedProvider | null {
   const preset = findPreset(settings.providerId);
   if (!preset) return null;
-  const baseUrl = (preset.id === 'custom' ? settings.baseUrl : preset.baseUrl).trim().replace(/\/+$/, '');
+  const chosenUrl = preset.editableBaseUrl ? settings.baseUrl.trim() || preset.baseUrl : preset.baseUrl;
+  const baseUrl = chosenUrl.replace(/\/+$/, '');
   const model = settings.model.trim() || preset.defaultModel;
   if (!baseUrl || !model) return null;
-  return { baseUrl, apiKey: settings.apiKey.trim(), model, jsonMode: preset.jsonMode };
+  return {
+    api: preset.api,
+    baseUrl,
+    apiKey: settings.apiKey.trim(),
+    model,
+    jsonMode: preset.jsonMode,
+    // Local servers and custom endpoints may run without a key; every cloud preset needs one.
+    requiresKey: !preset.local && preset.id !== 'custom',
+    timeoutMs: preset.local ? LOCAL_TIMEOUT_MS : CLOUD_TIMEOUT_MS,
+  };
 }
 
 /** Host-permission pattern for a base URL, e.g. `https://api.groq.com/*` (docs/adr/0007-permissions.md). */

@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 5 — selection edge cases, plus provider fixes (see [roadmap](roadmap.md)).
+Slice 6 — Anthropic, Ollama, LM Studio (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -20,16 +20,19 @@ Slice 5 — selection edge cases, plus provider fixes (see [roadmap](roadmap.md)
 - Slice 4 contenteditable (commit 52b868d, merged to `main`): [feature note](../features/contenteditable.md).
   Evidence: `npm run validate` exit 0 on 2026-10-18 — 109 unit, 66 e2e passed.
 
-- Provider fixes + slice 5 (branch `provider-fixes`): new Gemini/Groq default models, provider error text shown in popup and settings, Gemini 400 bad-key mapped to "key rejected"; selection e2e for iframes and open shadow roots ([provider note](../features/provider-settings.md), [rewrite flow](../features/rewrite-flow.md)).
+- Provider fixes + slice 5 (commit c6c1c1c, merged to `main`): new Gemini/Groq default models, provider error text shown in popup and settings, Gemini 400 bad-key mapped to "key rejected"; selection e2e for iframes and open shadow roots ([provider note](../features/provider-settings.md), [rewrite flow](../features/rewrite-flow.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 119 unit, 76 e2e passed, `web-ext lint` 0 errors / 2 known warnings.
 - Real provider call verified by the user on 2026-10-20: Gemini `gemini-3.5-flash-lite`, Test connection "Connection works." (timings in the provider note).
+
+- Slice 6 more providers (branch `slice-6-more-providers`): Anthropic adapter (raw fetch, default `claude-haiku-5-5`), Ollama and LM Studio presets (no key, editable address, 120 s timeout), "Show models" in settings ([provider note](../features/provider-settings.md)).
+  Evidence: `npm run validate` exit 0 on 2026-10-20 — 137 unit, 80 e2e passed.
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
 - Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
-- Groq default `openai/gpt-oss-120b` untested with a real key.
+- Untested with real keys/servers: Groq (`openai/gpt-oss-120b`), Anthropic (`claude-haiku-5-5`), Ollama, LM Studio.
 - OpenRouter, Mistral, OpenAI default model names are unverified; check before release.
 - `web-ext lint` `UNSAFE_VAR_ASSIGNMENT` in options bundle comes from Preact internals; explain in AMO review notes.
 - Firefox: shadow-root selection behaviour to check in slice 9.
@@ -40,7 +43,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 6 — Anthropic adapter, local models (Ollama, LM Studio), longer local timeout (FR-015).
+1. Slice 7 — minimum length setting, per-site off switch, sensitive-site list, keyboard shortcut (FR-002, FR-010, FR-012, FR-013).
 
 ## Last reviewed
-2026-10-20 — slices 0–5 and provider fixes checked with `npm run validate`.
+2026-10-20 — slices 0–6 checked with `npm run validate`.

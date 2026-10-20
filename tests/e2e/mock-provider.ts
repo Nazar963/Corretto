@@ -10,6 +10,8 @@ export interface Behaviour {
   content: (text: string) => string;
   /** Body sent with a non-200 status. */
   errorBody: unknown;
+  /** Model ids returned by GET /v1/models. */
+  models: string[];
 }
 
 export interface RecordedRequest {
@@ -24,6 +26,7 @@ export const defaultBehaviour = (): Behaviour => ({
   delayMs: 400,
   content: (text) => JSON.stringify({ minimal: `[minimal] ${text}`, fluent: `[fluent] ${text}`, formal: `[formal] ${text}` }),
   errorBody: {},
+  models: ['mock-model', 'mock-model-small', 'text-embedding-mock'],
 });
 
 export interface MockProvider {
@@ -40,6 +43,12 @@ export async function startMockProvider(): Promise<MockProvider> {
     let raw = '';
     req.on('data', (chunk) => (raw += chunk));
     req.on('end', () => {
+      if (req.method === 'GET' && req.url === '/v1/models') {
+        const { status, errorBody, models } = provider.behaviour;
+        res.writeHead(status, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(status === 200 ? { object: 'list', data: models.map((id) => ({ id })) } : errorBody));
+        return;
+      }
       if (req.method !== 'POST' || req.url !== '/v1/chat/completions') {
         res.writeHead(404).end();
         return;

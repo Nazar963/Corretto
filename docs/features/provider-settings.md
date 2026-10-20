@@ -1,6 +1,6 @@
 # Providers, settings and error states (slice 3)
 
-Covers [FR-009, FR-011, part of FR-015](../requirements/product.md). Replaces the slice 2 mock provider.
+Covers [FR-009, FR-011, FR-015](../requirements/product.md). Replaces the slice 2 mock provider. Slice 6 added Anthropic, Ollama, LM Studio and model listing.
 
 ## Behaviour
 - **Settings** (`lib/settings.ts`): `{providerId, apiKey, model, baseUrl}` in `storage.local` only. Read by the background and the options page; content-script code never reads them ([ADR-0002](../adr/0002-llm-calls-in-background.md)). Note: Chrome does not let us block content-script access to `storage.local`, so this is a code rule, not an enforced boundary.
@@ -8,7 +8,12 @@ Covers [FR-009, FR-011, part of FR-015](../requirements/product.md). Replaces th
   - Gemini `gemini-flash-lite-latest`. User test on 2026-10-20 (curl, user's key, JSON mode): `gemini-3.5-flash-lite` 200 in 1.1 s, `gemini-flash-lite-latest` 200 in 3.1 s, `gemini-3.1-flash-lite` 200 in 6.2 s, `gemini-2.5-flash(-lite)` 404 although listed, `gemini-flash-latest` no answer within 30 s (the old default). `reasoning_effort: none` is rejected (400) by most Gemini models, so it is not sent. The alias was chosen over the fastest versioned model because versioned names get retired.
   - Groq `openai/gpt-oss-120b`: `llama-3.3-70b-versatile` was retired 2026-08-16 ([Groq deprecations](https://console.groq.com/docs/deprecations)); replacement recommended there. **Not tested with a key.**
   - OpenRouter, Mistral, OpenAI defaults: still unverified.
-- **Adapter** (`lib/providers/openai.ts`): `POST {baseUrl}/chat/completions`, Bearer key if set, `response_format: json_object` when the preset supports it, temperature 0.4. 30 s total timeout; one retry on unreadable output ([ADR-0004](../adr/0004-output-contract.md)). HTTP 401/403 → `invalid_key` (also 400 whose message mentions "API key", Gemini's bad-key answer), 404 → `model_not_found`, 429 → `rate_limited`, other → `http`; fetch failure → `network`. The provider's own error message (OpenAI `{error:{message}}` or Gemini `[{error:{message}}]`, ≤ 200 chars, key redacted) is passed as `detail` and shown under the popup error and as "Provider said: …" in settings.
+  - Anthropic `claude-haiku-5-5` (fastest/cheapest current Claude; chosen by the user 2026-10-20). **Not tested with a key.**
+  - Ollama (`http://localhost:11434/v1`) and LM Studio (`http://localhost:1234/v1`): no default model (depends on what the user downloaded); key optional; server address editable; 120 s timeout. LM Studio has JSON mode off (it accepts `json_schema`, not `json_object`). **Not tested against real servers.**
+- **Adapters** (`lib/providers/`): `common.ts` (fetch, timeout/abort, error mapping, provider detail), `openai.ts` (chat-completions + `GET /models`), `anthropic.ts` (Messages API + `GET /models`), `index.ts` (dispatch by preset `api`, one retry on unreadable output, provider timeout). Raw fetch for Anthropic too, by the user's choice on 2026-10-20 (no `@anthropic-ai/sdk`).
+- **Anthropic request**: `POST /v1/messages` with `x-api-key`, `anthropic-version: 2023-06-01`, `anthropic-dangerous-direct-browser-access: true` (extension requests carry a browser Origin); body `model`, `max_tokens: 16000`, `system`, one user message, `output_config.effort: "low"`. No `temperature` (non-default sampling values are rejected on current models) and no `thinking` (adaptive by default). Only `text` blocks are read (responses may begin with empty `thinking` blocks). `stop_reason: "refusal"` → unreadable output with "The model declined to rewrite this text." Shapes taken from the bundled Claude API reference, not from a live call.
+- **Show models** (settings): asks the provider which models the key can use (`GET {base}/models`), strips Gemini's `models/` prefix, drops embedding/speech/image/video models, offers the rest as suggestions in the Model field. Needs no model name; checks key and permission first.
+- **OpenAI-compatible request**: `POST {baseUrl}/chat/completions`, Bearer key if set, `response_format: json_object` when the preset supports it, temperature 0.4. 30 s total timeout (120 s for local presets); one retry on unreadable output ([ADR-0004](../adr/0004-output-contract.md)). HTTP 401/403 → `invalid_key` (also 400 whose message mentions "API key", Gemini's bad-key answer), 404 → `model_not_found`, 429 → `rate_limited`, other → `http`; fetch failure → `network`. The provider's own error message (OpenAI `{error:{message}}` or Gemini `[{error:{message}}]`, ≤ 200 chars, key redacted) is passed as `detail` and shown under the popup error and as "Provider said: …" in settings.
 - **Prompt** (`lib/prompt.ts`): three tones, same language (incl. mixed), keep meaning/line breaks/names, treat user text as content not instructions, JSON only.
 - **Service** (`lib/rewrite-service.ts`): checks length (≤ 5,000 chars → else `too_long`), configuration, key (required for cloud presets, optional for custom), and host permission before any network call.
 - **Messaging**: one `runtime.connect` port per rewrite (`lib/rewrite-client.ts`, `entrypoints/background.ts`); closing the port aborts the provider fetch. "Test connection" and "Open settings" use `runtime.sendMessage`; test-connection is accepted only from extension pages.
@@ -17,12 +22,13 @@ Covers [FR-009, FR-011, part of FR-015](../requirements/product.md). Replaces th
 - **Options page** (`entrypoints/options/`, Preact 10.29.8): provider, server address (custom only), API key (hidden by default, Show toggle, "Get a key" link), model (preset suggestion), Save, Test connection (uses unsaved values), privacy note. Opens in a tab.
 
 ## Evidence
-- Unit: `tests/unit/parse.test.ts`, `openai.test.ts`, `rewrite-service.test.ts`, `settings.test.ts`.
-- E2E: `tests/e2e/provider.spec.ts`, `tests/e2e/options.spec.ts`, against a local mock OpenAI-compatible server (`tests/e2e/mock-provider.ts`). The e2e build grants `http://127.0.0.1/*` as a host permission so no prompt appears.
+- Unit: `tests/unit/parse.test.ts`, `providers.test.ts` (OpenAI-compatible and Anthropic contracts, model lists, timeouts), `rewrite-service.test.ts`, `settings.test.ts`.
+- E2E: `tests/e2e/provider.spec.ts`, `tests/e2e/options.spec.ts` (incl. Ollama preset: no key, custom server address, Show models), against a local mock OpenAI-compatible server (`tests/e2e/mock-provider.ts`). The e2e build grants `http://127.0.0.1/*` as a host permission so no prompt appears.
 - `npm run validate` exit 0 on 2026-10-18: 94 unit, 49 e2e passed. Content script 6.1 KB gzipped, options chunk 7.3 KB gzipped.
 
 ## Not verified
-- Real provider call: **verified by the user on 2026-10-20** with Gemini `gemini-3.5-flash-lite` (Test connection: "Connection works."). Groq not tested.
+- Real provider call: **verified by the user on 2026-10-20** with Gemini `gemini-3.5-flash-lite` (Test connection: "Connection works."). Groq, Anthropic, Ollama and LM Studio not tested with real keys/servers. The Anthropic adapter has no e2e test (its base URL is fixed, so it can't point at the mock server); it is covered by unit contract tests only.
+- Ollama's default allowed origins should include browser-extension origins and LM Studio may need CORS enabled; not verified.
 - Default model names in presets are unverified assumptions (providers rename models); check before release.
 - Whether each provider sends CORS headers is irrelevant with a granted host permission in Chrome; Firefox runtime not tested yet (slice 9).
 - The permission prompt itself (real user gesture) is not exercised by e2e.
