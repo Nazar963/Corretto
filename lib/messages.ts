@@ -68,6 +68,21 @@ export interface OpenSettingsRequest {
   type: 'corretto/open-settings';
 }
 
+/** Background -> content script: the keyboard shortcut was pressed (FR-010). */
+export interface ShortcutMessage {
+  type: 'corretto/shortcut';
+}
+
+/** Toolbar popup -> content script (top frame answers): which site is this and is Corretto on? */
+export interface SiteInfoRequest {
+  type: 'corretto/site-info';
+}
+
+export interface SiteInfoResponse {
+  host: string;
+  state: 'on' | 'disabled' | 'sensitive';
+}
+
 function hasType(message: unknown, type: string): boolean {
   return typeof message === 'object' && message !== null && (message as { type?: unknown }).type === type;
 }
@@ -86,4 +101,12 @@ export function isListModelsRequest(message: unknown): message is ListModelsRequ
 
 export function isOpenSettingsRequest(message: unknown): message is OpenSettingsRequest {
   return hasType(message, 'corretto/open-settings');
+}
+
+export function isShortcutMessage(message: unknown): message is ShortcutMessage {
+  return hasType(message, 'corretto/shortcut');
+}
+
+export function isSiteInfoRequest(message: unknown): message is SiteInfoRequest {
+  return hasType(message, 'corretto/site-info');
 }

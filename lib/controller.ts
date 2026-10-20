@@ -2,7 +2,8 @@
 // Listens at document level, so fields added after load need no extra observer (FR-001 AC-002).
 
 import { FieldButton } from './button';
-import { DEFAULT_MINIMUM, fieldText, isEligibleField, meetsMinimumLength, type Field } from './fields';
+import { deepActiveElement } from './site-hosts';
+import { DEFAULT_MINIMUM, fieldText, isEligibleField, meetsMinimumLength, type Field, type MinimumLength } from './fields';
 
 /** How long the button stays after the field loses focus. */
 export const HIDE_DELAY_MS = 2000;
@@ -11,6 +12,8 @@ export interface ControllerOptions {
   label: string;
   onActivate: (field: HTMLElement) => void;
   signal: AbortSignal;
+  /** Read on every check, so a changed setting applies on the next keystroke (FR-002). */
+  minimum?: () => MinimumLength;
 }
 
 function eventTarget(event: Event): Element | null {
@@ -19,7 +22,7 @@ function eventTarget(event: Event): Element | null {
   return target instanceof Element ? target : null;
 }
 
-export function startController({ label, onActivate, signal }: ControllerOptions): FieldButton {
+export function startController({ label, onActivate, signal, minimum = () => DEFAULT_MINIMUM }: ControllerOptions): FieldButton {
   const button = new FieldButton(label, onActivate);
   let current: Field | null = null;
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
@@ -27,7 +30,7 @@ export function startController({ label, onActivate, signal }: ControllerOptions
   const cancelHide = () => clearTimeout(hideTimer);
 
   const evaluate = () => {
-    if (current && current.isConnected && meetsMinimumLength(fieldText(current), DEFAULT_MINIMUM)) {
+    if (current && current.isConnected && meetsMinimumLength(fieldText(current), minimum())) {
       button.show(current);
     } else {
       button.hide();
@@ -62,6 +65,14 @@ export function startController({ label, onActivate, signal }: ControllerOptions
   const reposition = () => button.schedulePosition();
   window.addEventListener('scroll', reposition, { capture: true, passive: true, signal });
   window.addEventListener('resize', reposition, { passive: true, signal });
+
+  // A field may already have focus when we start: autofocused before the content script loaded,
+  // or the site was just switched back on. No focusin will come for it.
+  const focused = deepActiveElement();
+  if (isEligibleField(focused)) {
+    current = focused;
+    evaluate();
+  }
 
   signal.addEventListener('abort', () => {
     cancelHide();

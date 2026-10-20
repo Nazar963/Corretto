@@ -182,5 +182,89 @@
   },
   "options_noModels": {
     "message": "No models found. For a local server, download a model first."
+  },
+  "commandRewrite": {
+    "message": "Rewrite the text in the focused field"
+  },
+  "popup_unavailable": {
+    "message": "Corretto can't run on this page."
+  },
+  "popup_sensitive": {
+    "message": "Off here: this site is on your sensitive-sites list. You can change the list in settings."
+  },
+  "popup_onForSite": {
+    "message": "Corretto on this site"
+  },
+  "popup_shortcut": {
+    "message": "Shortcut: $KEYS$",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_settings": {
+    "message": "Settings"
+  },
+  "options_providerHeading": {
+    "message": "AI provider"
+  },
+  "options_sitesHeading": {
+    "message": "Where Corretto appears"
+  },
+  "options_minimumLegend": {
+    "message": "Show the button once the text has at least"
+  },
+  "options_minWords": {
+    "message": "Words"
+  },
+  "options_minChars": {
+    "message": "or characters"
+  },
+  "options_minimumHint": {
+    "message": "Whichever comes first. The keyboard shortcut works on any non-empty field."
+  },
+  "options_disabledHeading": {
+    "message": "Turned off on these sites"
+  },
+  "options_disabledEmpty": {
+    "message": "None. Use the Corretto toolbar button to turn it off on a site."
+  },
+  "options_remove": {
+    "message": "Remove"
+  },
+  "options_removeSite": {
+    "message": "Turn Corretto back on for $SITE$",
+    "placeholders": {
+      "site": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_sensitiveHeading": {
+    "message": "Sensitive sites (always off)"
+  },
+  "options_sensitiveHint": {
+    "message": "One site per line. Each entry also covers its subdomains. Banking, health and government ID sites are listed by default; the list is not complete."
+  },
+  "options_restoreDefaults": {
+    "message": "Restore default list"
+  },
+  "options_shortcutHeading": {
+    "message": "Keyboard shortcut"
+  },
+  "options_shortcutCurrent": {
+    "message": "Current shortcut: $KEYS$.",
+    "placeholders": {
+      "keys": {
+        "content": "$1"
+      }
+    }
+  },
+  "options_shortcutNone": {
+    "message": "No shortcut is set."
+  },
+  "options_shortcutChange": {
+    "message": "Change it in your browser's extension shortcut settings (Chrome, Brave, Edge: open chrome://extensions/shortcuts; Firefox: Add-ons ▸ gear menu ▸ Manage Extension Shortcuts)."
   }
 }

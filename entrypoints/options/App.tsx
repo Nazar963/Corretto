@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { ListModelsRequest, ListModelsResponse, RewriteResponse, TestConnectionRequest } from '@/lib/messages';
 import { findPreset, PRESETS } from '@/lib/providers/presets';
+import { SitesSection } from './SitesSection';
 import { loadSettings, originPattern, resolveProvider, saveSettings, type Settings } from '@/lib/settings';
 
 const t = browser.i18n.getMessage;
@@ -119,7 +120,8 @@ export function App() {
     <>
       <h1>{t('options_title')}</h1>
       <p class="lead">{t('options_lead')}</p>
-      <form onSubmit={onSave}>
+      <form onSubmit={onSave} aria-labelledby="provider-heading">
+        <h2 id="provider-heading">{t('options_providerHeading')}</h2>
         <label>
           {t('options_provider')}
           <select value={settings.providerId} onChange={(e) => onProviderChange(e.currentTarget.value)}>
@@ -214,6 +216,7 @@ export function App() {
           {status?.detail && <span class="detail">{t('options_providerSaid', [status.detail])}</span>}
         </p>
       </form>
+      <SitesSection />
       <p class="privacy">{t('options_privacy')}</p>
     </>
   );

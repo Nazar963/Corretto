@@ -27,3 +27,7 @@ Approved by the user in chat 2026-10-18.
 ## Related
 - [Requirements](../requirements/product.md)
 - [Architecture](../architecture/system.md)
+
+## Refinements (slice 7, still proposed)
+- The minimum is a user setting, read on every check.
+- A field that already has focus when the controller starts is adopted immediately (autofocus, site switched back on).

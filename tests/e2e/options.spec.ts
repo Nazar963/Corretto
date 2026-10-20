@@ -6,12 +6,14 @@ async function openOptions(page: Page, extensionId: string) {
   await expect(page.getByRole('heading', { name: 'Corretto settings' })).toBeVisible();
 }
 
+const providerForm = (page: Page) => page.getByRole('form', { name: 'AI provider' });
+
 const fields = (page: Page) => ({
-  provider: page.getByLabel('Provider'),
+  provider: providerForm(page).getByLabel('Provider'),
   baseUrl: page.getByLabel('Server address'),
   key: page.getByLabel('API key'),
   model: page.getByLabel('Model'),
-  status: page.getByRole('status'),
+  status: providerForm(page).getByRole('status'),
 });
 
 test.describe('FR-011: settings page', () => {
@@ -29,7 +31,7 @@ test.describe('FR-011: settings page', () => {
     const f = fields(page);
     await f.key.fill('new-key');
     await f.model.fill('other-model');
-    await page.getByRole('button', { name: 'Save' }).click();
+    await providerForm(page).getByRole('button', { name: 'Save' }).click();
     await expect(f.status).toHaveText('Saved.');
     await page.reload();
     await expect(fields(page).key).toHaveValue('new-key');

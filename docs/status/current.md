@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 6 — Anthropic, Ollama, LM Studio (see [roadmap](roadmap.md)).
+Slice 7 — display settings, sites, shortcut (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -24,13 +24,17 @@ Slice 6 — Anthropic, Ollama, LM Studio (see [roadmap](roadmap.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 119 unit, 76 e2e passed, `web-ext lint` 0 errors / 2 known warnings.
 - Real provider call verified by the user on 2026-10-20: Gemini `gemini-3.5-flash-lite`, Test connection "Connection works." (timings in the provider note).
 
-- Slice 6 more providers (branch `slice-6-more-providers`): Anthropic adapter (raw fetch, default `claude-haiku-5-5`), Ollama and LM Studio presets (no key, editable address, 120 s timeout), "Show models" in settings ([provider note](../features/provider-settings.md)).
+- Slice 6 more providers (commit 2f19faf, merged to `main`): Anthropic adapter (raw fetch, default `claude-haiku-5-5`), Ollama and LM Studio presets (no key, editable address, 120 s timeout), "Show models" in settings ([provider note](../features/provider-settings.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 137 unit, 80 e2e passed.
+
+- Slice 7 (branch `slice-7-sites-shortcut`): configurable minimum length, toolbar popup with per-site switch, editable sensitive-site list, keyboard shortcut, fix for already-focused fields ([feature note](../features/sites-and-shortcut.md)).
+  Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 90 e2e passed.
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
+- Shortcut `Alt+Shift+C` assignment on a real install not verified (not assigned in the automated test browser).
 - Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
 - Untested with real keys/servers: Groq (`openai/gpt-oss-120b`), Anthropic (`claude-haiku-5-5`), Ollama, LM Studio.
 - OpenRouter, Mistral, OpenAI default model names are unverified; check before release.
@@ -43,7 +47,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 7 — minimum length setting, per-site off switch, sensitive-site list, keyboard shortcut (FR-002, FR-010, FR-012, FR-013).
+1. Slice 8 — onboarding guide (FR-014).
 
 ## Last reviewed
-2026-10-20 — slices 0–6 checked with `npm run validate`.
+2026-10-20 — slices 0–7 checked with `npm run validate`.

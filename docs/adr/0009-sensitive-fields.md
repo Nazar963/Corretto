@@ -27,3 +27,8 @@ Accepted by the user as incomplete but useful.
 ## Related
 - [Requirements](../requirements/product.md)
 - [Architecture](../architecture/system.md)
+
+## Refinements (slice 7, still proposed)
+- Default list in `lib/sites.ts`; entries match a domain and its subdomains, a bare suffix matches a TLD. Stored in `prefs` (separate from provider settings) so the content script never loads the key.
+- iframes also use the top-level site where the browser exposes it.
+- Tests: `tests/unit/sites.test.ts`, `tests/e2e/sites.spec.ts`.

@@ -44,6 +44,30 @@ describe('controller', () => {
     expect(visible()).toBe(true);
   });
 
+  it('reads the minimum on every check, so changed settings apply immediately', () => {
+    abort.abort();
+    abort = new AbortController();
+    let minimum = { minWords: 6, minChars: 100 };
+    startController({ label: 'Rewrite', onActivate: () => {}, signal: abort.signal, minimum: () => minimum });
+    const field = document.querySelector<HTMLTextAreaElement>('#t')!;
+    field.focus();
+    type(field, 'one two three');
+    expect(visible()).toBe(false);
+    minimum = { minWords: 3, minChars: 100 };
+    type(field, 'one two three');
+    expect(visible()).toBe(true);
+  });
+
+  it('picks up a field that already has focus when it starts', () => {
+    abort.abort();
+    const field = document.querySelector<HTMLTextAreaElement>('#t')!;
+    field.value = 'this text is long enough';
+    field.focus();
+    abort = new AbortController();
+    startController({ label: 'Rewrite', onActivate: () => {}, signal: abort.signal });
+    expect(visible()).toBe(true);
+  });
+
   it('never shows on an excluded field', () => {
     const field = document.querySelector<HTMLInputElement>('#p')!;
     field.focus();

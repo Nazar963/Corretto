@@ -92,3 +92,9 @@ test.describe('FR-003: excluded fields', () => {
     await expect(page.locator('corretto-button')).toBeHidden();
   });
 });
+
+test('a field focused before the content script loaded gets the button', async ({ page }) => {
+  await page.goto(`${FIXTURE_ORIGIN}/autofocus.html`);
+  await expect(page.locator('#auto')).toBeFocused();
+  await expect(page.locator('corretto-button')).toBeVisible();
+});

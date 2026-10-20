@@ -12,6 +12,13 @@ export default defineConfig({
     description: '__MSG_extDescription__',
     default_locale: 'en',
     permissions: ['storage'],
+    // FR-010: changeable by the user in the browser's shortcut settings.
+    commands: {
+      rewrite: {
+        suggested_key: { default: 'Alt+Shift+C' },
+        description: '__MSG_commandRewrite__',
+      },
+    },
     // Requested at runtime for the provider the user picks; no install-time warning.
     optional_host_permissions: ['https://*/*', 'http://localhost/*', 'http://127.0.0.1/*'],
     // The e2e build talks to a local mock provider without a permission prompt.

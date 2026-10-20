@@ -6,6 +6,7 @@ import {
   REWRITE_PORT,
   type ListModelsResponse,
   type RewriteResponse,
+  type ShortcutMessage,
 } from '@/lib/messages';
 import { availableModels, rewrite, type ServiceDeps } from '@/lib/rewrite-service';
 import { loadSettings } from '@/lib/settings';
@@ -31,6 +32,18 @@ export default defineBackground(() => {
       if (!controller.signal.aborted) port.postMessage(response);
     });
   });
+
+  // Keyboard shortcut (FR-010): tell the tab; the frame holding focus opens the popup.
+  const onCommand = async (command: string, tab?: { id?: number }) => {
+    if (command !== 'rewrite') return;
+    const tabId = tab?.id ?? (await browser.tabs.query({ active: true, currentWindow: true }))[0]?.id;
+    if (tabId === undefined) return;
+    // Pages where content scripts cannot run (browser pages, stores) have no listener.
+    await browser.tabs.sendMessage(tabId, { type: 'corretto/shortcut' } satisfies ShortcutMessage).catch(() => {});
+  };
+  browser.commands.onCommand.addListener((command, tab) => void onCommand(command, tab));
+  // Browser shortcuts cannot be pressed from Playwright; the e2e build exposes the handler.
+  if (import.meta.env.MODE === 'e2e') Object.assign(globalThis, { correttoTest: { onCommand } });
 
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (sender.id !== browser.runtime.id) return false;
