@@ -3,10 +3,11 @@
 Draft for slice 10. Nothing here has been submitted. Items marked **TODO (user)** need the user's accounts or decisions.
 
 ## Before the first submission — checklist
-- [ ] **TODO (user)**: real icon (16/32/48/128 px) and a 440×280 promo tile; the current icon is a placeholder.
-- [ ] **TODO (user)**: public contact address for `site/privacy.html` (placeholder `[contact address]`).
+- [x] Icon from the user's artwork (`store/brand/icon-artwork.jpg`), built by `python3 scripts/make-brand.py` into `public/icon/{16,32,48,96,128}.png` (16/32 use a closer crop; 16 px is only roughly legible, normal for detailed art) and `store/brand/icon-512.png`.
+- [x] Small promo tile (440×280): `store/promo/small-tile-440x280.png` (user's icon, name and what it does; rendered from `store/brand/promo-tile.html`). Chosen by the user 2026-10-20 over a crop of `store/brand/promo-artwork.jpg`, which showed the Chrome logo and "Chrome AI features".
+- [x] Contact address in `site/privacy.html`: nizarjandalybusiness@gmail.com (given by the user 2026-10-20).
 - [ ] **TODO (user)**: enable GitHub Pages (Settings → Pages → Source: GitHub Actions), push `main`, set the effective date in `site/privacy.html`; the policy URL will be `https://<user>.github.io/<repo>/privacy.html`.
-- [ ] **TODO (user)**: version number for the first release (`package.json` is `0.0.1`).
+- [x] Version 1.0.0 (`package.json`, manifest).
 - [ ] **TODO (user)**: developer accounts: Chrome Web Store (one-time fee), Microsoft Partner Center (Edge), addons.mozilla.org.
 - [ ] Have the privacy policy reviewed; it was drafted by Claude and is not legal advice.
 - [ ] Check provider privacy-policy links and free-tier data terms (onboarding note is deliberately general).
@@ -43,7 +44,7 @@ Draft for slice 10. Nothing here has been submitted. Items marked **TODO (user)*
 - **Remote code**: No. All code is in the package.
 - **Data usage disclosures**: handles *Website content* and *Personal communications* (the text the user chooses to rewrite), sent only to the user's chosen AI provider when the user asks. Not sold, not used for unrelated purposes, not used for creditworthiness or lending. No other categories.
 - **Privacy policy URL**: the GitHub Pages URL above.
-- **Screenshots** (1280×800, `npm run screenshots` → `store/screenshots/`): suggestions, replaced with undo, setup guide, settings.
+- **Screenshots** (1280×800, `npm run screenshots` → `store/screenshots/`): suggestions, replaced with undo, setup guide, settings. The same command renders the recommended promo tile.
 
 ## Firefox (AMO)
 - Manifest declares `data_collection_permissions.required: ["websiteContent", "personalCommunications"]` (user's decision 2026-10-20) and `strict_min_version: 140`. Mark the listing as Firefox desktop only (Android out of scope).
@@ -66,6 +67,6 @@ Repository secrets it expects (names only; values come from each store's develop
 The first upload to each store is done by hand in the store's web form (listing, screenshots, disclosures, privacy URL); the workflow is for later updates. Neither the workflow nor the GitHub Pages workflow has run yet (nothing pushed).
 
 ## Verified locally (2026-10-20)
-- `npm run zip` / `npm run zip:firefox` produce `corretto-0.0.1-chrome.zip` (33 KB), `-firefox.zip` (33 KB) and `-sources.zip` (69 files; docs, store assets, site and Claude settings excluded).
+- `npm run zip` / `npm run zip:firefox` produce `corretto-1.0.0-chrome.zip` (94 KB), `-firefox.zip` (94 KB) and `-sources.zip` (docs, store assets, site and Claude settings excluded). The sources-zip rebuild check was done on 0.0.1, before the icon change.
 - Rebuilding from the sources zip (`npm ci`, `npx wxt build -b firefox`) gives output identical to the project build (`diff -rq`).
 - `web-ext lint`: 0 errors; 1 warning (Preact runtime `innerHTML`, explained in reviewer notes).

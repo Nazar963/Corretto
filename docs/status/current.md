@@ -43,7 +43,8 @@ Slice 10 — release preparation (store submission waits on the user) (see [road
 _Nothing._
 
 ## Blocked / open questions
-- **Release blocked on the user** (see checklist in [release](../operations/release.md)): real icon and promo tile, public contact address for the privacy policy, enabling GitHub Pages and pushing, first version number, store developer accounts, legal review of the policy.
+- **Release blocked on the user** (see checklist in [release](../operations/release.md)): enable GitHub Pages and push, set the policy's effective date, store developer accounts, legal review of the policy. Done 2026-10-20: icon from the user's artwork, promo tile, contact address, version 1.0.0.
+  Evidence: `npm run validate` exit 0 (156 unit, 103 e2e, size 90 KB gz), `npm run test:firefox` 6 passed, `web-ext lint` 0 errors / 1 known warning, zips `corretto-1.0.0-*`.
 - GitHub Actions (CI, Pages, submit) have never run: nothing pushed.
 - Firefox extension pages (popup, settings, guide UI) and shortcut not automated; check by hand. Branded Google Chrome not automated.
 - Setup guide with a cloud provider through the real permission prompt: check by hand on a fresh install.

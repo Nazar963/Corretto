@@ -1,7 +1,7 @@
 {
   "name": "corretto",
   "description": "Rewrite text in any field into three clearer alternatives using your own LLM key.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "license": "MIT",

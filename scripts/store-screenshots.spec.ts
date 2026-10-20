@@ -56,3 +56,9 @@ test('4-settings', async ({ page, extensionId, worker }) => {
   await expect(page.getByRole('heading', { name: 'Corretto settings' })).toBeVisible();
   await page.screenshot({ path: `${OUT}/4-settings.png` });
 });
+
+test('5-promo-tile', async ({ page }) => {
+  await page.setViewportSize({ width: 440, height: 280 });
+  await page.goto(`file://${path.resolve('store/brand/promo-tile.html')}`);
+  await page.screenshot({ path: path.resolve('store/promo/small-tile-440x280.png') });
+});

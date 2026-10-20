@@ -24,6 +24,8 @@ export default defineConfig({
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
     default_locale: 'en',
+    // Toolbar icon; the popup entrypoint adds default_popup to the same key.
+    action: { default_icon: { 16: 'icon/16.png', 32: 'icon/32.png', 48: 'icon/48.png' } },
     permissions: ['storage'],
     // FR-010: changeable by the user in the browser's shortcut settings.
     commands: {
