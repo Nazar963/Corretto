@@ -134,7 +134,7 @@ All UI strings in `_locales/`.
 - **Privacy / GDPR:** zero telemetry, no backend [T]. Text is sent only after an explicit click or shortcut [A], only to the chosen provider [T], never stored [T]. Privacy policy on GitHub Pages [T], EU/GDPR jurisdiction [T]; states that free tiers may train on text [A].
 - **Security:** key in `storage.local`, never `storage.sync` [A]; key read only by the background, never sent to content scripts [A]; stored unencrypted, disclosed in the policy [A]; model output rendered via `textContent` only [A]; no remote code [A]; provider hosts are optional permissions requested on selection [P].
 - **Performance:** content script < ~30 KB gzipped [A]; no network until click [A]; no typing lag [A]; max input 5,000 characters [A]; timeout 30 s cloud / 120 s local [A].
-- **Compatibility:** Chrome, Brave, Edge latest 2 versions; Firefox 128 ESR+; MV3 everywhere [A].
+- **Compatibility:** Chrome, Brave, Edge latest 2 versions [A]; Firefox 140+ (current ESR; first version with the built-in data consent screen) [T, changed from 128 by the user on 2026-10-20]; MV3 everywhere [A].
 - **Accessibility:** ARIA labels, keyboard-operable popup, WCAG AA contrast, light/dark [A].
 
 ## Business rules
@@ -151,6 +151,6 @@ All UI strings in `_locales/`.
 - User-chosen tones; correction history; explanations/diffs [T].
 
 ## Open questions
-- Firefox AMO `data_collection_permissions`: does sending text to the user-chosen provider count as "website content"? Verify before submission.
+- ~~Firefox AMO `data_collection_permissions`~~ Resolved 2026-10-20: declared as required `websiteContent` and `personalCommunications` (user's choice), per Mozilla's definition of transmission ("handled outside the add-on or the local browser").
 - Exact free-tier data-use terms per provider for the privacy policy and onboarding (verify before release).
 - Icon/branding: placeholder for now [T].

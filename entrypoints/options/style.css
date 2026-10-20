@@ -58,6 +58,7 @@ input, select {
 }
 input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .key { display: flex; gap: 8px; }
+.key button { white-space: nowrap; flex: none; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 button {
   font: inherit;

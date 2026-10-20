@@ -18,6 +18,7 @@ Cross-browser extension (Chrome, Brave, Edge, Firefox). A button on text fields 
 - Single entry point for checks: `npm run validate` (lint, typecheck, unit tests, Chrome + Firefox builds, `web-ext lint`, e2e)
 - Individual: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `npm run build:firefox`, `npm run size`
 - Other browsers (local only): `npm run test:e2e:edge`, `npm run test:e2e:brave`, `npm run test:firefox` (geckodriver)
+- Release: `npm run zip`, `npm run zip:firefox`, `npm run screenshots`; see `docs/operations/release.md`. Public pages live in `site/`, never in `docs/` (the vault).
 
 ## Project memory (Obsidian vault: docs/)
 - Read `docs/00-index.md` at session start, then only the notes relevant to the task. Do not load the whole vault.

@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 9 — browsers, accessibility, size (see [roadmap](roadmap.md)).
+Slice 10 — release preparation (store submission waits on the user) (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -33,28 +33,31 @@ Slice 9 — browsers, accessibility, size (see [roadmap](roadmap.md)).
 - Slice 8 setup guide (commit 459b08d, merged to `main`): four-step first-run guide, shared provider form, saves only after a successful test ([feature note](../features/onboarding.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 95 e2e passed.
 
-- Slice 9 (branch `slice-9-browsers-a11y`): full e2e in Edge 155 and Brave 154, Firefox 157 smoke via geckodriver, axe accessibility checks (light/dark), size budget in `validate`; dark-mode button contrast fixed ([feature note](../features/browsers-a11y-size.md)).
+- Slice 9 (commit f95c94e, merged to `main`): full e2e in Edge 155 and Brave 154, Firefox 157 smoke via geckodriver, axe accessibility checks (light/dark), size budget in `validate`; dark-mode button contrast fixed ([feature note](../features/browsers-a11y-size.md)).
   Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 103 e2e passed, size budget OK; `npm run test:e2e:edge` 103 passed; `npm run test:e2e:brave` 103 passed; `npm run test:firefox` 6 passed.
+
+- Slice 10 release prep (branch `slice-10-release-prep`, merged to `main`): Firefox `data_collection_permissions` (required `websiteContent`, `personalCommunications`) and minimum Firefox 140 (user decisions); privacy policy and landing page in `site/` with a GitHub Pages workflow; store listing texts and justifications; generated 1280×800 screenshots; sources zip trimmed and verified to rebuild identically; new submit workflow (dry run by default) ([release notes](../operations/release.md)).
+  Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 103 e2e, size OK, `web-ext lint` 0 errors / 1 warning; `npm run test:firefox` 6 passed; `npm run screenshots` 4 images; sources rebuild `diff -rq` identical.
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
+- **Release blocked on the user** (see checklist in [release](../operations/release.md)): real icon and promo tile, public contact address for the privacy policy, enabling GitHub Pages and pushing, first version number, store developer accounts, legal review of the policy.
+- GitHub Actions (CI, Pages, submit) have never run: nothing pushed.
 - Firefox extension pages (popup, settings, guide UI) and shortcut not automated; check by hand. Branded Google Chrome not automated.
 - Setup guide with a cloud provider through the real permission prompt: check by hand on a fresh install.
 - Shortcut `Alt+Shift+C` assignment on a real install not verified (not assigned in the automated test browser).
 - Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
 - Untested with real keys/servers: Groq (`openai/gpt-oss-120b`), Anthropic (`claude-haiku-5-5`), Ollama, LM Studio.
 - OpenRouter, Mistral, OpenAI default model names are unverified; check before release.
-- `web-ext lint` `UNSAFE_VAR_ASSIGNMENT` in options bundle comes from Preact internals; explain in AMO review notes.
-- Firefox `data_collection_permissions` classification (verify before AMO submission).
+- `web-ext lint` `UNSAFE_VAR_ASSIGNMENT` comes from the Preact runtime; reviewer note drafted in [release](../operations/release.md).
 - Free-tier data-use terms per provider (verify before release).
-- `.github/workflows/submit.yml` is the old Plasmo/pnpm workflow and will not work; replace in slice 10.
 - `npm audit`: 4 high findings in `node-forge` (transitive dev dependency of `web-ext`); not shipped in the extension.
-- CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 10 — privacy policy (GitHub Pages), store listings, packaging, replace `submit.yml`, AMO `data_collection_permissions`.
+1. User: release checklist items, then manual checks on real sites and stores.
+2. After first store review: address reviewer feedback; consider translations (FR-017 is ready for them).
 
 ## Last reviewed
-2026-10-20 — slices 0–9 checked with `npm run validate`, Edge, Brave and Firefox runs.
+2026-10-20 — slices 0–10 checked with `npm run validate`, Edge, Brave and Firefox runs.

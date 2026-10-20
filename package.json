@@ -27,7 +27,8 @@
     "test:firefox": "npm run build:firefox:e2e && playwright test -c playwright.firefox.config.ts",
     "test:e2e:edge": "CORRETTO_BROWSER=/usr/bin/microsoft-edge playwright test",
     "test:e2e:brave": "CORRETTO_BROWSER=/usr/bin/brave-browser playwright test",
-    "size": "node scripts/check-size.mjs"
+    "size": "node scripts/check-size.mjs",
+    "screenshots": "npm run build:e2e && playwright test -c playwright.store.config.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

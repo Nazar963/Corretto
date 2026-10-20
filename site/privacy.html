@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Corretto Privacy Policy</title>
+  <meta name="description" content="How the Corretto browser extension handles your text, settings and API key.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Corretto Privacy Policy</h1>
+  <p class="meta">Effective date: <!-- RELEASE: set on publication -->[date]. Applies to the Corretto browser extension for Chrome, Edge, Brave and Firefox.</p>
+
+  <section class="summary" aria-labelledby="summary">
+    <h2 id="summary" style="margin-top:0">Summary</h2>
+    <ul>
+      <li>Corretto has <strong>no server</strong>. Its developer never receives your text, your settings or your API key.</li>
+      <li>Your text is sent <strong>only when you click the Corretto button or press its shortcut</strong>, and only to the AI provider <strong>you</strong> chose in the settings.</li>
+      <li>Corretto stores <strong>no text, no rewrites and no history</strong>.</li>
+      <li>No analytics, no tracking, no ads, no cookies, nothing sold or shared.</li>
+    </ul>
+  </section>
+
+  <h2>What happens to your text</h2>
+  <p>When you click the Corretto button in a text field (or press the keyboard shortcut), Corretto takes the text you selected in that field, or the whole field if nothing is selected. It sends that text, with instructions to rewrite it, from your browser directly to the AI provider configured in Corretto's settings, using your own API key. The provider returns three rewrites, which Corretto shows to you. If you pick one, it replaces the text in the field. Nothing is sent while you type, and nothing is sent to anyone other than the provider you chose.</p>
+  <p>The text you rewrite may contain personal information, for example an email or a social media post. Corretto never shows its button on password, payment or one-time-code fields, and by default not on banking, health and government identity websites. You can turn it off on any other website from the toolbar button.</p>
+
+  <h2>Your AI provider</h2>
+  <p>The provider you choose (for example Google Gemini, Groq, Mistral, OpenRouter, OpenAI or Anthropic) receives your text under <strong>its own terms and privacy policy</strong>, as part of your agreement with that provider. For those providers, Corretto's developer is not involved in that processing. Some free tiers allow the provider to use submitted text to improve its models; please read your provider's terms. If you use a model running on your own computer (Ollama or LM Studio), your text stays on your computer.</p>
+
+  <h2>What Corretto stores, and where</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">Data</th><th scope="col">Where</th><th scope="col">Why</th></tr></thead>
+      <tbody>
+        <tr><td>Provider, model, server address, API key</td><td>Your browser's extension storage on this device (not synced)</td><td>To call the provider you chose</td></tr>
+        <tr><td>Display settings: minimum text length, sites where Corretto is off, sensitive-site list</td><td>Same</td><td>To show the button where you want it</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Your API key is stored <strong>unencrypted</strong> in the browser's extension storage, like other extension settings; anyone with access to your browser profile could read it. It is only ever sent to your chosen provider. Removing Corretto, or clearing the key in its settings, deletes it.</p>
+
+  <h2>What Corretto does not do</h2>
+  <ul>
+    <li>No analytics, telemetry, crash reports or usage statistics.</li>
+    <li>No accounts, no cookies, no advertising, no tracking across websites.</li>
+    <li>No sale, transfer or sharing of data with anyone, for any purpose.</li>
+    <li>No remote code: everything Corretto runs is part of the reviewed extension package.</li>
+  </ul>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><strong>Read and change data on all websites</strong>: needed to show the button in text fields on any website and to replace the text when you pick a rewrite. Corretto does not read pages otherwise.</li>
+    <li><strong>Storage</strong>: to keep the settings listed above on your device.</li>
+    <li><strong>Access to your provider's website</strong>: requested only when you choose a provider, so Corretto can send it your text.</li>
+  </ul>
+
+  <h2>Your rights (GDPR)</h2>
+  <p>Corretto's developer does not collect or process your personal data, so there is nothing held by the developer to access, correct or delete. All data Corretto stores is on your device and under your control: you can change or delete it in Corretto's settings, or remove it entirely by uninstalling the extension. For text you sent to an AI provider, contact that provider to exercise your rights.</p>
+
+  <h2>Children</h2>
+  <p>Corretto is not directed at children. AI providers set their own minimum ages.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the new version will be published at this address with a new effective date. Changes that affect how your text is handled will also be described in the extension's release notes.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy: <!-- RELEASE: replace with the developer's public contact address -->[contact address].</p>
+
+  <footer>Corretto is open source under the MIT License.</footer>
+</main>
+</body>
+</html>

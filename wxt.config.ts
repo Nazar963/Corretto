@@ -3,6 +3,19 @@ import { defineConfig } from 'wxt';
 // See docs/adr/0001-wxt-framework.md and docs/adr/0007-permissions.md.
 export default defineConfig({
   manifestVersion: 3,
+  // AMO reviewers need only what builds the add-on; project notes and store assets stay out.
+  zip: {
+    excludeSources: [
+      'docs/**',
+      'store/**',
+      'site/**',
+      'user-level/**',
+      'CLAUDE.md',
+      '.claude/**',
+      'test-results/**',
+      'playwright-report/**',
+    ],
+  },
   // Preact JSX for extension pages (docs/adr/0006-ui-isolation.md).
   vite: () => ({
     oxc: { jsx: { runtime: 'automatic', importSource: 'preact' } },
@@ -27,8 +40,16 @@ export default defineConfig({
       gecko: {
         // Placeholder add-on ID; must stay stable once published on AMO.
         id: 'corretto@corretto.extension',
-        strict_min_version: '128.0',
+        // 140: first version with Firefox's built-in data consent screen (and the current ESR).
+        strict_min_version: '140.0',
+        // Text the user asks to rewrite (often an email or post) goes to the provider they chose.
+        // Chosen by the user on 2026-10-20; see docs/features/release.md.
+        data_collection_permissions: {
+          required: ['websiteContent', 'personalCommunications'],
+        },
       },
+      // Mobile is out of scope; if Android is ever enabled, 142 is the first version with the consent key.
+      gecko_android: { strict_min_version: '142.0' },
     },
   }),
 });

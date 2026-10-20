@@ -8,7 +8,7 @@ Covers the compatibility, accessibility and performance NFRs in [requirements](.
 | Chromium (Playwright build) | `npm run test:e2e` (in `validate`, and CI) | 103/103 passed |
 | Microsoft Edge 155 | `npm run test:e2e:edge` | 103/103 passed |
 | Brave 154 | `npm run test:e2e:brave` | 103/103 passed |
-| Firefox 157 (snap) | `npm run test:firefox` | 6/6 smoke tests passed |
+| Firefox 157 (snap) | `npm run test:firefox` | 6/6 smoke tests passed (also after slice 10's manifest change: min 140, data consent) |
 | Google Chrome 155 | not run: branded Chrome no longer loads extensions from the command line | covered by the same Chromium engine; check by hand with "Load unpacked" |
 
 - **Firefox smoke** (`tests/firefox/`): Playwright cannot load extensions in Firefox, so a small WebDriver client drives geckodriver. It installs `.output/firefox-mv3-e2e` as a temporary add-on and checks: the setup guide opens on install; the content script runs on web pages with `<all_urls>` and `127.0.0.1` granted; textarea rewrite, replace and undo; Esc; rich contenteditable replace and undo restoring markup; **selection inside a shadow-root editor** (the open question from slice 5; it works).
