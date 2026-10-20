@@ -39,10 +39,14 @@ Slice 10 — release preparation (store submission waits on the user) (see [road
 - Slice 10 release prep (branch `slice-10-release-prep`, merged to `main`): Firefox `data_collection_permissions` (required `websiteContent`, `personalCommunications`) and minimum Firefox 140 (user decisions); privacy policy and landing page in `site/` with a GitHub Pages workflow; store listing texts and justifications; generated 1280×800 screenshots; sources zip trimmed and verified to rebuild identically; new submit workflow (dry run by default) ([release notes](../operations/release.md)).
   Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 103 e2e, size OK, `web-ext lint` 0 errors / 1 warning; `npm run test:firefox` 6 passed; `npm run screenshots` 4 images; sources rebuild `diff -rq` identical.
 
+- Fix (on `main`): Corretto now reaches tabs open before install/update on Chromium (all-sites host access + `scripting`, user's decision), privacy policy permissions updated, effective date 20 October 2026.
+  Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 105 e2e; Edge 105, Brave 105; `existing-tabs.spec.ts` also in branded Chrome 155; `npm run test:firefox` 6 passed.
+
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
+- User reported no button on Gmail/Notion (2026-10-20); fix above needs the user's confirmation after reloading the extension. Notion untested here (needs an account).
 - **Release blocked on the user** (see checklist in [release](../operations/release.md)): enable GitHub Pages and push, set the policy's effective date, store developer accounts, legal review of the policy. Done 2026-10-20: icon from the user's artwork, promo tile, contact address, version 1.0.0.
   Evidence: `npm run validate` exit 0 (156 unit, 103 e2e, size 90 KB gz), `npm run test:firefox` 6 passed, `web-ext lint` 0 errors / 1 known warning, zips `corretto-1.0.0-*`.
 - GitHub Actions (CI, Pages, submit) have never run: nothing pushed.

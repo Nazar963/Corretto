@@ -15,6 +15,11 @@ Covers the compatibility, accessibility and performance NFRs in [requirements](.
 - geckodriver cannot script extension pages, so the e2e builds include a test-only hook (content script `postMessage` → background) to configure settings. It is guarded by `import.meta.env.MODE === 'e2e'`; shipped builds were checked to contain neither the hook nor open shadow roots.
 - Firefox runner path: `FIREFOX_BINARY` (default `/snap/firefox/current/usr/lib/firefox/firefox`). `CORRETTO_BROWSER` points the Playwright suite at another Chromium-based browser.
 
+## Tabs open before install or update (fix 2026-10-20)
+- Reported by the user: no button on Gmail and Notion in Chrome, and no replacement. The shipped build worked in Playwright's Chromium and in branded Chrome 155 on fresh pages, so the cause was tabs that predate the (re)loaded extension, plus a loaded extension whose files had been replaced by later builds without a reload.
+- Fix: inject into open tabs on install/update (Chromium); see [ADR-0007 revision](../adr/0007-permissions.md). Test `tests/e2e/existing-tabs.spec.ts` starts the browser without Corretto, opens the page, then installs via CDP `Extensions.loadUnpacked`; passes in Chromium, Edge, Brave and branded Chrome 155, fails without the fix.
+- Not verified: Notion specifically (needs an account); behaviour of Notion's editor with programmatic replacement is still a known risk.
+
 ## Accessibility
 - `tests/e2e/a11y.spec.ts` runs axe-core (`@axe-core/playwright` 4.13.0, dev dependency added for the WCAG AA requirement) with WCAG 2.0/2.1 A and AA rules on the settings page, setup guide steps 1–3, toolbar popup, and the injected button plus popup states (loading, results, toast, error), in **light and dark** mode.
 - Found and fixed: dark-mode primary buttons had white text on light blue (contrast failure); new `--on-accent` token.

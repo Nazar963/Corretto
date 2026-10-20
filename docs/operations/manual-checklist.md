@@ -3,6 +3,8 @@
 Real sites need a signed-in user, so these checks are run by hand, not by CI.
 Load the dev build: `npm run build`, then in Chrome/Brave open `chrome://extensions`, enable Developer mode, **Load unpacked** → `.output/chrome-mv3`. Configure a provider in the extension's settings first.
 
+**After every rebuild**, click the reload icon on Corretto's card in `chrome://extensions`. `npm run build` replaces the files under the loaded extension, and Chrome keeps running a mix of old and new files until reloaded. Since 2026-10-20 a reload also re-injects Corretto into open tabs, so refreshing Gmail/Notion is no longer needed (refresh once if they were opened with an older build).
+
 Record each run in [status/current.md](../status/current.md) with the date, browser version and result.
 
 ## For every site

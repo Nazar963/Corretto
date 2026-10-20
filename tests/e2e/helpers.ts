@@ -8,7 +8,7 @@ import { startMockProvider, type MockProvider } from './mock-provider';
 
 // The e2e build opens shadow roots so tests can inspect the UI (lib/shadow.ts),
 // and grants http://127.0.0.1/* so the mock provider needs no permission prompt.
-const extensionPath = path.resolve('.output/chrome-mv3-e2e');
+const extensionPath = path.resolve(process.env.CORRETTO_EXTENSION_PATH ?? '.output/chrome-mv3-e2e');
 const fixturesDir = path.resolve('tests/e2e/fixtures');
 
 /** Fixture pages are served from this origin through request routing. */

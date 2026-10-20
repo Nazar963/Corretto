@@ -113,10 +113,14 @@ test.describe('FR-009: error states', () => {
     expect(provider.requests).toHaveLength(0);
   });
 
-  test('a missing host permission is reported before any request', async ({ page, worker }) => {
-    // The e2e build only grants 127.0.0.1; a custom https host has no permission.
-    await configure(worker, { providerId: 'custom', apiKey: 'k', model: 'm', baseUrl: 'https://llm.example.com/v1' });
-    await start(page);
-    await expect(panel(page).getByText('needs permission')).toBeVisible();
+  test('on Chromium, provider hosts are already reachable without a prompt (ADR-0007)', async ({ worker }) => {
+    // All-sites host access (needed to reach tabs open before install) also covers providers.
+    // The missing-permission path remains for Firefox and is covered in tests/unit/rewrite-service.test.ts.
+    const granted = await worker.evaluate(() =>
+      (globalThis as unknown as { chrome: typeof browser }).chrome.permissions.contains({
+        origins: ['https://api.groq.com/*', 'https://llm.example.com/*'],
+      }),
+    );
+    expect(granted).toBe(true);
   });
 });

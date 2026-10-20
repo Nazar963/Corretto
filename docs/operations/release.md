@@ -40,7 +40,9 @@ Draft for slice 10. Nothing here has been submitted. Items marked **TODO (user)*
 - **Permission justifications**:
   - Host access to all sites (content script on `<all_urls>`): needed to show the rewrite button in text fields on any website and to replace the text when the user picks a rewrite. The script does nothing until the user focuses a text field and does not read pages otherwise.
   - `storage`: stores the user's provider settings, API key and display preferences on the device.
-  - Optional host permissions (`https://*/*`, `http://localhost/*`, `http://127.0.0.1/*`): requested only for the origin of the AI provider the user selects (or their local server), to send the text there.
+  - Host permissions `<all_urls>`: the content script must run in tabs that were already open when Corretto was installed or updated, which requires injecting it with `scripting`; the same access lets Corretto reach the AI provider the user selects (or their local server). It does not read pages otherwise.
+  - `scripting`: injects the content script into already-open tabs on install and update, so users don't have to refresh them.
+  - Optional host permissions (`https://*/*`, `http://localhost/*`, `http://127.0.0.1/*`): used by the Firefox build to request the chosen provider's origin; on Chromium they are already covered by the host permission above.
 - **Remote code**: No. All code is in the package.
 - **Data usage disclosures**: handles *Website content* and *Personal communications* (the text the user chooses to rewrite), sent only to the user's chosen AI provider when the user asks. Not sold, not used for unrelated purposes, not used for creditworthiness or lending. No other categories.
 - **Privacy policy URL**: the GitHub Pages URL above.

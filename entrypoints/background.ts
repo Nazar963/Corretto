@@ -14,6 +14,20 @@ import { loadSettings } from '@/lib/settings';
 /** Short sample used by "Test connection" (FR-011 AC-002). */
 const TEST_TEXT = 'This are a short test sentence.';
 
+/**
+ * Chromium only injects content scripts into pages loaded after install or update, so a tab that
+ * was already open (Gmail, Notion...) would show no button until refreshed. Firefox injects into
+ * open tabs by itself. The new script replaces any old, invalidated copy in the page.
+ */
+async function injectIntoOpenTabs(): Promise<void> {
+  if (import.meta.env.FIREFOX) return;
+  for (const tab of await browser.tabs.query({})) {
+    if (tab.id === undefined || tab.discarded) continue;
+    // Browser pages, store pages and other restricted tabs reject injection: skip them.
+    await browser.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ['/content-scripts/content.js'] }).catch(() => {});
+  }
+}
+
 export default defineBackground(() => {
   const deps: ServiceDeps = {
     hasPermission: (pattern) => browser.permissions.contains({ origins: [pattern] }),
@@ -36,6 +50,7 @@ export default defineBackground(() => {
   // FR-014: the setup guide opens once, on first install; not on updates or browser restarts.
   browser.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') void browser.tabs.create({ url: browser.runtime.getURL('/welcome.html') });
+    if (reason === 'install' || reason === 'update') void injectIntoOpenTabs();
   });
 
   // Keyboard shortcut (FR-010): tell the tab; the frame holding focus opens the popup.
