@@ -5,7 +5,7 @@ import { loadSettings, originPattern, resolveProvider, saveSettings, type Settin
 
 const t = browser.i18n.getMessage;
 
-type Status = { kind: 'ok' | 'err'; text: string } | null;
+type Status = { kind: 'ok' | 'err'; text: string; detail?: string } | null;
 
 /**
  * Ask for the provider's host permission. Must run before any other await so the
@@ -72,7 +72,10 @@ export function App() {
         settings,
       } satisfies TestConnectionRequest)) as RewriteResponse;
       if (response.ok) setStatus({ kind: 'ok', text: t('options_testOk') });
-      else if (response.error.code !== 'cancelled') setStatus({ kind: 'err', text: t(`error_${response.error.code}`) });
+      else if (response.error.code !== 'cancelled') {
+        const { code, detail } = response.error;
+        setStatus({ kind: 'err', text: t(`error_${code}`), detail });
+      }
     } finally {
       setBusy(false);
     }
@@ -152,6 +155,7 @@ export function App() {
         </div>
         <p class={`status ${status?.kind ?? ''}`} role="status">
           {status?.text}
+          {status?.detail && <span class="detail">{t('options_providerSaid', [status.detail])}</span>}
         </p>
       </form>
       <p class="privacy">{t('options_privacy')}</p>

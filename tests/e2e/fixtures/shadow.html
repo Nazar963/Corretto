@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Corretto fixture: fields in shadow DOM</title></head>
+<body>
+  <!-- Web-component editors (e.g. Salesforce, some chat widgets) put fields inside open shadow roots. -->
+  <div id="widget"></div>
+  <script>
+    const root = document.getElementById('widget').attachShadow({ mode: 'open' });
+    root.innerHTML = `
+      <style>textarea, div { display: block; width: 480px; min-height: 80px; margin: 8px 0; border: 1px solid #999; }</style>
+      <textarea id="shadow-textarea"></textarea>
+      <div id="shadow-editable" contenteditable="true"></div>`;
+  </script>
+</body>
+</html>

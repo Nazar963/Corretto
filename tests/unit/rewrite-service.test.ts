@@ -50,4 +50,12 @@ describe('rewrite service', () => {
     expect(hasPermission).toHaveBeenCalledWith('https://api.groq.com/*');
     expect(fetch).not.toHaveBeenCalled();
   });
+
+  it('passes the provider detail through', async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify({ error: { message: 'Model retired' } }), { status: 404 }));
+    expect(await rewrite('hello', settings, signal, { ...allow, fetch })).toEqual({
+      ok: false,
+      error: { code: 'model_not_found', detail: 'Model retired' },
+    });
+  });
 });

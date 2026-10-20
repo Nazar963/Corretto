@@ -9,9 +9,34 @@ import type { ResolvedProvider } from '../settings';
 export const DEFAULT_TIMEOUT_MS = 30_000;
 
 export class ProviderError extends Error {
-  constructor(readonly code: ErrorCode) {
+  constructor(
+    readonly code: ErrorCode,
+    readonly detail?: string,
+  ) {
     super(code);
   }
+}
+
+const MAX_DETAIL_CHARS = 200;
+
+/**
+ * The provider's error message from a failed response, if any. Handles the OpenAI shape
+ * `{error: {message}}` and Gemini's `[{error: {message}}]`. Never includes the key.
+ */
+export async function readErrorDetail(response: Response, apiKey: string): Promise<string | undefined> {
+  let message: unknown;
+  try {
+    const body: unknown = await response.json();
+    const first = Array.isArray(body) ? body[0] : body;
+    message = (first as { error?: { message?: unknown } })?.error?.message;
+  } catch {
+    return undefined;
+  }
+  if (typeof message !== 'string' || message.trim() === '') return undefined;
+  let detail = message.trim().replace(/\s+/g, ' ');
+  // Short strings are not real keys; redacting them would mangle ordinary words.
+  if (apiKey.length >= 8) detail = detail.split(apiKey).join('***');
+  return detail.length > MAX_DETAIL_CHARS ? `${detail.slice(0, MAX_DETAIL_CHARS - 1)}…` : detail;
 }
 
 export interface AdapterDeps {
@@ -20,8 +45,10 @@ export interface AdapterDeps {
   timeoutMs?: number;
 }
 
-function codeForStatus(status: number): ErrorCode {
+function codeForStatus(status: number, detail: string | undefined): ErrorCode {
   if (status === 401 || status === 403) return 'invalid_key';
+  // Gemini answers a bad key with 400 "API key not valid" / "Please pass a valid API key".
+  if (status === 400 && detail && /api key/i.test(detail)) return 'invalid_key';
   if (status === 404) return 'model_not_found';
   if (status === 429) return 'rate_limited';
   return 'http';
@@ -58,7 +85,10 @@ async function chatCompletion(
   } catch {
     throw toError();
   }
-  if (!response.ok) throw new ProviderError(codeForStatus(response.status));
+  if (!response.ok) {
+    const detail = await readErrorDetail(response, provider.apiKey);
+    throw new ProviderError(codeForStatus(response.status, detail), detail);
+  }
 
   let data: unknown;
   try {

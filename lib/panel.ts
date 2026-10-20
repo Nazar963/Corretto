@@ -58,6 +58,7 @@ const STYLE = `
   }
   .option:hover, .option:focus-visible { background: #eff6ff; outline: 2px solid #2563eb; outline-offset: -2px; }
   .label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #4b5563; }
+  .detail { display: block; margin-top: 2px; font-size: 12px; color: #4b5563; overflow-wrap: anywhere; }
   .text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 8.4em; overflow: auto; }
   .action {
     all: unset;
@@ -77,7 +78,7 @@ const STYLE = `
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
   @media (prefers-color-scheme: dark) {
     .panel { color: #f3f4f6; background: #1f2937; border-color: #374151; }
-    .label { color: #9ca3af; }
+    .label, .detail { color: #9ca3af; }
     .option:hover, .option:focus-visible, .action:hover, .action:focus-visible { background: #1e3a8a; outline-color: #60a5fa; }
     .action { color: #93c5fd; }
     .spinner { border-color: #1e3a8a; border-top-color: #60a5fa; }
@@ -169,9 +170,16 @@ export class Panel {
   showError(
     anchor: HTMLElement,
     message: string,
-    handlers: { action: { label: string; run: () => void } | null; onDismiss: (reason: DismissReason) => void },
+    handlers: {
+      /** The provider's own explanation, shown under the message (plain text). */
+      detail?: string;
+      action: { label: string; run: () => void } | null;
+      onDismiss: (reason: DismissReason) => void;
+    },
   ) {
-    const row = el('div', { className: 'row' }, [el('span', { className: 'grow', text: message })]);
+    const text = el('span', { className: 'grow', text: message });
+    if (handlers.detail) text.append(el('span', { className: 'detail', text: handlers.detail }));
+    const row = el('div', { className: 'row' }, [text]);
     if (handlers.action) row.append(actionButton(handlers.action.label, handlers.action.run));
     row.setAttribute('role', 'alert');
     this.open('popup', anchor, [row], handlers.onDismiss);

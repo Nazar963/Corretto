@@ -24,7 +24,7 @@ describe('settings', () => {
     expect(resolveProvider({ providerId: 'groq', apiKey: ' k ', model: '', baseUrl: 'ignored' })).toEqual({
       baseUrl: 'https://api.groq.com/openai/v1',
       apiKey: 'k',
-      model: 'llama-3.3-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       jsonMode: true,
     });
     expect(resolveProvider({ providerId: 'custom', apiKey: '', model: 'm', baseUrl: 'http://127.0.0.1:1234/v1/' })).toMatchObject({

@@ -34,6 +34,7 @@ export async function rewrite(
   try {
     return { ok: true, rewrites: await requestRewrites(provider, text, signal, deps) };
   } catch (error) {
-    return fail(error instanceof ProviderError ? error.code : 'unknown');
+    if (!(error instanceof ProviderError)) return fail('unknown');
+    return { ok: false, error: error.detail ? { code: error.code, detail: error.detail } : { code: error.code } };
   }
 }

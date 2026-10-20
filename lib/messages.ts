@@ -30,7 +30,13 @@ export const ERROR_CODES = [
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
-export type RewriteResponse = { ok: true; rewrites: Rewrites } | { ok: false; error: { code: ErrorCode } };
+export interface RewriteError {
+  code: ErrorCode;
+  /** The provider's own explanation, if it sent one (shortened, key redacted). */
+  detail?: string;
+}
+
+export type RewriteResponse = { ok: true; rewrites: Rewrites } | { ok: false; error: RewriteError };
 
 /**
  * Rewrites run over a port so closing it cancels the provider request.

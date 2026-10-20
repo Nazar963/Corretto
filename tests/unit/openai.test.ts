@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { requestRewrites } from '@/lib/providers/openai';
+import { readErrorDetail, requestRewrites } from '@/lib/providers/openai';
 import { SYSTEM_PROMPT } from '@/lib/prompt';
 import type { ResolvedProvider } from '@/lib/settings';
 
@@ -103,5 +103,54 @@ describe('requestRewrites (contract)', () => {
     const pending = requestRewrites(provider, 'x', controller.signal, { fetch: hanging, timeoutMs: 5000 });
     controller.abort();
     await expect(pending).rejects.toMatchObject({ code: 'cancelled' });
+  });
+});
+
+describe('provider error detail', () => {
+  const json = (body: unknown, status = 400) => new Response(JSON.stringify(body), { status });
+
+  it('reads the OpenAI error shape', async () => {
+    expect(await readErrorDetail(json({ error: { message: 'Model gone' } }), 'k')).toBe('Model gone');
+  });
+
+  it("reads Gemini's array error shape", async () => {
+    expect(await readErrorDetail(json([{ error: { message: 'Please pass a valid API key' } }]), 'k')).toBe(
+      'Please pass a valid API key',
+    );
+  });
+
+  it('redacts the key and collapses whitespace', async () => {
+    const key = 'sk-test-123456';
+    expect(await readErrorDetail(json({ error: { message: `Bad key  ${key}\n here` } }), key)).toBe('Bad key *** here');
+  });
+
+  it('shortens long messages', async () => {
+    const detail = await readErrorDetail(json({ error: { message: 'x'.repeat(500) } }), 'k');
+    expect(detail).toHaveLength(200);
+    expect(detail!.endsWith('…')).toBe(true);
+  });
+
+  it.each([
+    ['non-JSON body', new Response('<html>', { status: 500 })],
+    ['no message', json({ error: {} })],
+    ['empty body', new Response('', { status: 502 })],
+  ])('returns undefined for %s', async (_name, response) => {
+    expect(await readErrorDetail(response, 'k')).toBeUndefined();
+  });
+
+  it('attaches the detail to the error and maps a 400 key message to invalid_key', async () => {
+    const fetch = fakeFetch(json([{ error: { message: 'API key not valid. Please pass a valid API key.' } }]));
+    await expect(requestRewrites(provider, 'x', signal(), { fetch })).rejects.toMatchObject({
+      code: 'invalid_key',
+      detail: 'API key not valid. Please pass a valid API key.',
+    });
+  });
+
+  it('keeps other 400s as http with their detail', async () => {
+    const fetch = fakeFetch(json({ error: { message: 'Unsupported parameter: response_format' } }));
+    await expect(requestRewrites(provider, 'x', signal(), { fetch })).rejects.toMatchObject({
+      code: 'http',
+      detail: 'Unsupported parameter: response_format',
+    });
   });
 });

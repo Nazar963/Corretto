@@ -8,6 +8,8 @@ export interface Behaviour {
   delayMs: number;
   /** Assistant message content for a given user text. */
   content: (text: string) => string;
+  /** Body sent with a non-200 status. */
+  errorBody: unknown;
 }
 
 export interface RecordedRequest {
@@ -21,6 +23,7 @@ export const defaultBehaviour = (): Behaviour => ({
   status: 200,
   delayMs: 400,
   content: (text) => JSON.stringify({ minimal: `[minimal] ${text}`, fluent: `[fluent] ${text}`, formal: `[formal] ${text}` }),
+  errorBody: {},
 });
 
 export interface MockProvider {
@@ -46,12 +49,12 @@ export async function startMockProvider(): Promise<MockProvider> {
       res.on('close', () => {
         if (!res.writableFinished) record.aborted = true;
       });
-      const { status, delayMs, content } = provider.behaviour;
+      const { status, delayMs, content, errorBody } = provider.behaviour;
       const userText = record.body.messages.find((m) => m.role === 'user')?.content ?? '';
       setTimeout(() => {
         if (res.destroyed) return;
         res.writeHead(status, { 'Content-Type': 'application/json' });
-        res.end(status === 200 ? JSON.stringify({ choices: [{ message: { content: content(userText) } }] }) : '{}');
+        res.end(JSON.stringify(status === 200 ? { choices: [{ message: { content: content(userText) } }] } : errorBody));
       }, delayMs);
     });
   });

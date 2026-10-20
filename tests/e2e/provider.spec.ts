@@ -45,6 +45,21 @@ test.describe('FR-009: error states', () => {
     await expect(page.locator('#textarea')).toHaveValue(TEXT);
   });
 
+  test("shows the provider's own explanation", async ({ page, provider }) => {
+    provider.behaviour.status = 404;
+    provider.behaviour.errorBody = { error: { message: 'The model `mock-model` has been decommissioned' } };
+    await start(page);
+    await expect(panel(page).getByText('model was not found')).toBeVisible();
+    await expect(panel(page).getByText('The model `mock-model` has been decommissioned')).toBeVisible();
+  });
+
+  test('a Gemini-style 400 for a bad key is reported as a rejected key', async ({ page, provider }) => {
+    provider.behaviour.status = 400;
+    provider.behaviour.errorBody = [{ error: { message: 'API key not valid. Please pass a valid API key.' } }];
+    await start(page);
+    await expect(panel(page).getByText('Your API key was rejected')).toBeVisible();
+  });
+
   test('rate limit offers retry, and retry can succeed', async ({ page, provider }) => {
     provider.behaviour.status = 429;
     await start(page);

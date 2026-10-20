@@ -88,6 +88,7 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
       if (code === 'cancelled') return;
       const action = errorAction(code);
       panel.showError(target.field, strings[`error_${code}`], {
+        detail: response.error.detail,
         action:
           action === 'settings'
             ? {

@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 4 — contenteditable support (see [roadmap](roadmap.md)).
+Slice 5 — selection edge cases, plus provider fixes (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -17,17 +17,22 @@ Slice 4 — contenteditable support (see [roadmap](roadmap.md)).
 - Slice 3 providers, settings page and error states (commit f4a375f, merged to `main`): [feature note](../features/provider-settings.md).
   Evidence: `npm run validate` exit 0 on 2026-10-18 — 94 unit, 49 e2e passed (against a local mock provider), `web-ext lint` 0 errors / 2 warnings.
 
-- Slice 4 contenteditable (branch `slice-4-contenteditable`): [feature note](../features/contenteditable.md).
+- Slice 4 contenteditable (commit 52b868d, merged to `main`): [feature note](../features/contenteditable.md).
   Evidence: `npm run validate` exit 0 on 2026-10-18 — 109 unit, 66 e2e passed.
+
+- Provider fixes + slice 5 (branch `provider-fixes`): new Gemini/Groq default models, provider error text shown in popup and settings, Gemini 400 bad-key mapped to "key rejected"; selection e2e for iframes and open shadow roots ([provider note](../features/provider-settings.md), [rewrite flow](../features/rewrite-flow.md)).
+  Evidence: `npm run validate` exit 0 on 2026-10-20 — 119 unit, 76 e2e passed, `web-ext lint` 0 errors / 2 known warnings.
+- Real provider call verified by the user on 2026-10-20: Gemini `gemini-3.5-flash-lite`, Test connection "Connection works." (timings in the provider note).
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
-- Slice 4 manual check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
-- Slice 3 manual check: one real call with a Groq or Gemini key (needs the user's key; not done).
-- Preset default model names are unverified; check before release.
+- Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
+- Groq default `openai/gpt-oss-120b` untested with a real key.
+- OpenRouter, Mistral, OpenAI default model names are unverified; check before release.
 - `web-ext lint` `UNSAFE_VAR_ASSIGNMENT` in options bundle comes from Preact internals; explain in AMO review notes.
+- Firefox: shadow-root selection behaviour to check in slice 9.
 - Firefox `data_collection_permissions` classification (verify before AMO submission).
 - Free-tier data-use terms per provider (verify before release).
 - `.github/workflows/submit.yml` is the old Plasmo/pnpm workflow and will not work; replace in slice 10.
@@ -35,7 +40,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 5 — selection mode everywhere (FR-004). Note: selection capture already works for textarea/input/contenteditable; slice 5 may reduce to edge cases (iframes, shadow DOM).
+1. Slice 6 — Anthropic adapter, local models (Ollama, LM Studio), longer local timeout (FR-015).
 
 ## Last reviewed
-2026-10-18 — slices 0–4 checked with `npm run validate`.
+2026-10-20 — slices 0–5 and provider fixes checked with `npm run validate`.

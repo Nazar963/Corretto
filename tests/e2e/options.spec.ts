@@ -65,4 +65,13 @@ test.describe('FR-011: settings page', () => {
     await expect(fields(page).status).toHaveText('Your API key was rejected. Check it in settings.');
     expect(provider.requests[0]!.headers.authorization).toBe('Bearer typed-but-not-saved');
   });
+
+  test("Test connection shows the provider's explanation", async ({ page, extensionId, provider }) => {
+    provider.behaviour.status = 404;
+    provider.behaviour.errorBody = { error: { message: 'model `nope` does not exist' } };
+    await openOptions(page, extensionId);
+    await page.getByRole('button', { name: 'Test connection' }).click();
+    await expect(fields(page).status).toContainText('The model was not found.');
+    await expect(fields(page).status).toContainText('Provider said: “model `nope` does not exist”');
+  });
 });

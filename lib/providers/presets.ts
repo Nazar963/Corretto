@@ -1,6 +1,7 @@
 // Provider presets are data, not code (docs/adr/0003-provider-adapters.md).
 // Default models are suggestions the user can change; they must be re-checked before release
-// because providers rename and retire models often.
+// because providers rename and retire models often. Prefer provider aliases that track the
+// current model over versioned names (see docs/features/provider-settings.md for evidence).
 
 export interface ProviderPreset {
   id: string;
@@ -21,7 +22,8 @@ export const PRESETS: readonly ProviderPreset[] = [
     id: 'groq',
     name: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
-    defaultModel: 'llama-3.3-70b-versatile',
+    // llama-3.3-70b-versatile was retired 2026-08-16; this is Groq's recommended replacement.
+    defaultModel: 'openai/gpt-oss-120b',
     keyUrl: 'https://console.groq.com/keys',
     jsonMode: true,
     free: true,
@@ -30,7 +32,8 @@ export const PRESETS: readonly ProviderPreset[] = [
     id: 'gemini',
     name: 'Google Gemini',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-    defaultModel: 'gemini-flash-latest',
+    // gemini-flash-latest hung past 30 s in a real test; the lite alias answered in ~3 s.
+    defaultModel: 'gemini-flash-lite-latest',
     keyUrl: 'https://aistudio.google.com/apikey',
     jsonMode: true,
     free: true,

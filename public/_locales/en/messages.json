@@ -138,5 +138,13 @@
   },
   "error_changed": {
     "message": "The text changed while Corretto was working. Try again."
+  },
+  "options_providerSaid": {
+    "message": "Provider said: “$DETAIL$”",
+    "placeholders": {
+      "detail": {
+        "content": "$1"
+      }
+    }
   }
 }

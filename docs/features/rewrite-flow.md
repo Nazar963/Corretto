@@ -22,5 +22,9 @@ Covers [FR-004, FR-006, FR-007, FR-008](../requirements/product.md) for `<textar
 ## Covered since
 - FR-007 AC-001 is covered for a real React 19 controlled textarea (`tests/e2e/fixtures/react/main.js`), including state after re-render and after Undo.
 
+## Selection edge cases (slice 5)
+- Covered by `tests/e2e/selection.spec.ts`: selection in an iframe textarea and an editable iframe body; textarea and contenteditable inside an open shadow root (whole text, selection only, undo). All passed in Chromium without code changes: Chrome's `document.getSelection()` reaches into open shadow roots.
+- Firefox may not expose shadow-root selections the same way; check in slice 9 (possible fix: `Selection.getComposedRanges`).
+
 ## Not covered yet
 - Firefox runtime behaviour, real sites, contenteditable.
