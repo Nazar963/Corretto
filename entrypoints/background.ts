@@ -52,6 +52,19 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (sender.id !== browser.runtime.id) return false;
+    // e2e build only (see entrypoints/content.ts): configure from Firefox tests.
+    if (import.meta.env.MODE === 'e2e' && (message as { type?: string }).type === 'corretto/e2e') {
+      const request = message as { action: string; settings?: unknown };
+      void (async () => {
+        if (request.action === 'configure') await browser.storage.local.set({ settings: request.settings });
+        sendResponse({
+          settings: (await browser.storage.local.get('settings')).settings,
+          local: await browser.permissions.contains({ origins: ['http://127.0.0.1/*'] }),
+          all: await browser.permissions.contains({ origins: ['<all_urls>'] }),
+        });
+      })();
+      return true;
+    }
     if (isOpenSettingsRequest(message)) {
       void browser.runtime.openOptionsPage();
       return false;

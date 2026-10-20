@@ -5,7 +5,7 @@ const extensionPath = path.resolve('.output/chrome-mv3');
 
 test('Chromium build loads with a running background worker', async () => {
   const context = await chromium.launchPersistentContext('', {
-    channel: 'chromium',
+    ...(process.env.CORRETTO_BROWSER ? { executablePath: process.env.CORRETTO_BROWSER } : { channel: 'chromium' }),
     args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
   });
   try {

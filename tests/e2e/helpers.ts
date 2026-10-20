@@ -81,7 +81,8 @@ export const test = base.extend<{
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext('', {
-      channel: 'chromium',
+      // CORRETTO_BROWSER=/usr/bin/microsoft-edge (or brave-browser) runs the suite in that browser.
+      ...(process.env.CORRETTO_BROWSER ? { executablePath: process.env.CORRETTO_BROWSER } : { channel: 'chromium' }),
       args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
     });
     await context.route(`${FIXTURE_ORIGIN}/**`, async (route) => {

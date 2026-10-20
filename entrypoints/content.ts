@@ -68,6 +68,17 @@ export default defineContentScript({
       return false;
     };
     browser.runtime.onMessage.addListener(onMessage);
+    // e2e build only: lets the Firefox tests (geckodriver cannot script extension pages)
+    // configure the extension from a test page. Compiled out of shipped builds.
+    if (import.meta.env.MODE === 'e2e') {
+      window.addEventListener('message', (event) => {
+        const request = (event.data as { correttoTest?: object } | null)?.correttoTest;
+        if (event.source !== window || window !== window.top || !request) return;
+        void browser.runtime
+          .sendMessage({ type: 'corretto/e2e', ...request })
+          .then((result: unknown) => window.postMessage({ correttoTestResult: result ?? null }, '*'));
+      });
+    }
     ctx.onInvalidated(() => browser.runtime.onMessage.removeListener(onMessage));
   },
 });

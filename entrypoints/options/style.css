@@ -5,6 +5,7 @@
   --muted: #4b5563;
   --border: #d1d5db;
   --accent: #2563eb;
+  --on-accent: #ffffff;
   --ok: #047857;
   --err: #b91c1c;
   color-scheme: light dark;
@@ -17,6 +18,7 @@
     --muted: #9ca3af;
     --border: #374151;
     --accent: #60a5fa;
+    --on-accent: #0b1220;
     --ok: #34d399;
     --err: #f87171;
   }
@@ -67,7 +69,7 @@ button {
   color: var(--text);
   cursor: pointer;
 }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 button:disabled { opacity: 0.6; cursor: default; }
 a { color: var(--accent); }
 .status { margin: 0; min-height: 1.5em; }

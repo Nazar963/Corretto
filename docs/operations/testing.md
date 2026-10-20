@@ -3,7 +3,10 @@
 - Entry point: `npm run validate` (defined in `package.json`). CI runs it on push to `main` and on PRs (`.github/workflows/ci.yml`).
 - Unit: Vitest + happy-dom, `tests/unit/**/*.test.ts`, config `vitest.config.ts` (uses `WxtVitest` plugin).
 - E2E: Playwright, `tests/e2e/`. `extension-loads.spec.ts` loads the shipped build `.output/chrome-mv3`; all other specs load `.output/chrome-mv3-e2e` (`npm run build:e2e`, WXT `--mode e2e`), where shadow roots are `open` so Playwright can see the UI (`lib/shadow.ts`). Shipped builds keep `closed` roots. validate builds both. Fixture pages live in `tests/e2e/fixtures/` and are served at `http://corretto.test` through `context.route` (`tests/e2e/helpers.ts`), so content scripts run on them as on a normal http page.
-- Firefox: `npm run lint:firefox` runs `web-ext lint` on `.output/firefox-mv3`. No automated Firefox e2e; manual smoke test planned for slice 9.
+- Firefox: `npm run lint:firefox` runs `web-ext lint` on `.output/firefox-mv3`; `npm run test:firefox` runs the geckodriver smoke tests in `tests/firefox/` (local only, not in `validate`).
+- Other Chromium browsers: `npm run test:e2e:edge`, `npm run test:e2e:brave` (env `CORRETTO_BROWSER`).
+- Accessibility: `tests/e2e/a11y.spec.ts` (axe-core, light and dark).
+- Size budget: `npm run size` (`scripts/check-size.mjs`), part of `validate`.
 - Known lint warning: `MISSING_DATA_COLLECTION_PERMISSIONS` — open question in [requirements](../requirements/product.md), to resolve before AMO submission (slice 10).
 - React fixture: `react`/`react-dom` 19.3.1 are dev dependencies used only by `tests/e2e/fixtures/react/main.js`. `tests/e2e/global-setup.ts` bundles it with Vite (8.3.4, declared explicitly; already required by vitest and WXT) into `.output/e2e-fixtures/react.js`, served at `/react.js`. Not part of the extension bundle.
 - Mock provider: `tests/e2e/mock-provider.ts` starts an OpenAI-compatible server on a free 127.0.0.1 port per test; tests change `provider.behaviour` (status, delay, content) and inspect `provider.requests`. The `worker` fixture writes settings pointing at it. The e2e build adds `host_permissions: ['http://127.0.0.1/*']` (`wxt.config.ts`) so no permission prompt appears; shipped builds only have optional host permissions.

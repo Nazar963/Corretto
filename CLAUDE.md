@@ -16,7 +16,8 @@ Cross-browser extension (Chrome, Brave, Edge, Firefox). A button on text fields 
 - Install: `npm install` (once per machine: `npx playwright install chromium`)
 - Dev: `npm run dev` (Chrome) / `npm run dev:firefox`
 - Single entry point for checks: `npm run validate` (lint, typecheck, unit tests, Chrome + Firefox builds, `web-ext lint`, e2e)
-- Individual: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `npm run build:firefox`
+- Individual: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `npm run build:firefox`, `npm run size`
+- Other browsers (local only): `npm run test:e2e:edge`, `npm run test:e2e:brave`, `npm run test:firefox` (geckodriver)
 
 ## Project memory (Obsidian vault: docs/)
 - Read `docs/00-index.md` at session start, then only the notes relevant to the task. Do not load the whole vault.

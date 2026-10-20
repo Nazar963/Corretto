@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 8 — setup guide (see [roadmap](roadmap.md)).
+Slice 9 — browsers, accessibility, size (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -30,20 +30,23 @@ Slice 8 — setup guide (see [roadmap](roadmap.md)).
 - Slice 7 (commit 157a792, merged to `main`): configurable minimum length, toolbar popup with per-site switch, editable sensitive-site list, keyboard shortcut, fix for already-focused fields ([feature note](../features/sites-and-shortcut.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 90 e2e passed.
 
-- Slice 8 setup guide (branch `slice-8-onboarding`): four-step first-run guide, shared provider form, saves only after a successful test ([feature note](../features/onboarding.md)).
+- Slice 8 setup guide (commit 459b08d, merged to `main`): four-step first-run guide, shared provider form, saves only after a successful test ([feature note](../features/onboarding.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 95 e2e passed.
+
+- Slice 9 (branch `slice-9-browsers-a11y`): full e2e in Edge 155 and Brave 154, Firefox 157 smoke via geckodriver, axe accessibility checks (light/dark), size budget in `validate`; dark-mode button contrast fixed ([feature note](../features/browsers-a11y-size.md)).
+  Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 103 e2e passed, size budget OK; `npm run test:e2e:edge` 103 passed; `npm run test:e2e:brave` 103 passed; `npm run test:firefox` 6 passed.
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
+- Firefox extension pages (popup, settings, guide UI) and shortcut not automated; check by hand. Branded Google Chrome not automated.
 - Setup guide with a cloud provider through the real permission prompt: check by hand on a fresh install.
 - Shortcut `Alt+Shift+C` assignment on a real install not verified (not assigned in the automated test browser).
 - Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
 - Untested with real keys/servers: Groq (`openai/gpt-oss-120b`), Anthropic (`claude-haiku-5-5`), Ollama, LM Studio.
 - OpenRouter, Mistral, OpenAI default model names are unverified; check before release.
 - `web-ext lint` `UNSAFE_VAR_ASSIGNMENT` in options bundle comes from Preact internals; explain in AMO review notes.
-- Firefox: shadow-root selection behaviour to check in slice 9.
 - Firefox `data_collection_permissions` classification (verify before AMO submission).
 - Free-tier data-use terms per provider (verify before release).
 - `.github/workflows/submit.yml` is the old Plasmo/pnpm workflow and will not work; replace in slice 10.
@@ -51,7 +54,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 9 — Firefox, Brave and Edge pass; accessibility pass; size budget check.
+1. Slice 10 — privacy policy (GitHub Pages), store listings, packaging, replace `submit.yml`, AMO `data_collection_permissions`.
 
 ## Last reviewed
-2026-10-20 — slices 0–8 checked with `npm run validate`.
+2026-10-20 — slices 0–9 checked with `npm run validate`, Edge, Brave and Firefox runs.
