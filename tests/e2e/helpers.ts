@@ -1,4 +1,4 @@
-import { chromium, test as base, type BrowserContext, type Worker } from '@playwright/test';
+import { chromium, expect as baseExpect, test as base, type BrowserContext, type Worker } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Prefs } from '../../lib/prefs';
@@ -96,6 +96,9 @@ export const test = base.extend<{
   worker: async ({ context, provider }, use) => {
     // Content scripts register with the service worker; wait for it before tests navigate.
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker'));
+    // The setup guide opens once at install (FR-014). Wait for it, so tests that wait for a
+    // new tab (e.g. "Open settings") never catch the guide by mistake.
+    await baseExpect.poll(() => context.pages().some((p) => p.url().endsWith('/welcome.html'))).toBe(true);
     // Default: a configured custom provider pointing at the mock server.
     await configure(worker, { providerId: 'custom', apiKey: TEST_KEY, model: 'mock-model', baseUrl: provider.baseUrl });
     await use(worker);

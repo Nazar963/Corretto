@@ -1,7 +1,7 @@
 # Current Project Status
 
 ## Current milestone
-Slice 7 — display settings, sites, shortcut (see [roadmap](roadmap.md)).
+Slice 8 — setup guide (see [roadmap](roadmap.md)).
 
 ## Completed
 - Planning: [requirements](../requirements/product.md), [architecture](../architecture/system.md), ADR-0001…0010 (all `proposed`), [roadmap](roadmap.md). Approved by the user in chat 2026-10-18; statuses left for the user to change.
@@ -27,13 +27,17 @@ Slice 7 — display settings, sites, shortcut (see [roadmap](roadmap.md)).
 - Slice 6 more providers (commit 2f19faf, merged to `main`): Anthropic adapter (raw fetch, default `claude-haiku-5-5`), Ollama and LM Studio presets (no key, editable address, 120 s timeout), "Show models" in settings ([provider note](../features/provider-settings.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 137 unit, 80 e2e passed.
 
-- Slice 7 (branch `slice-7-sites-shortcut`): configurable minimum length, toolbar popup with per-site switch, editable sensitive-site list, keyboard shortcut, fix for already-focused fields ([feature note](../features/sites-and-shortcut.md)).
+- Slice 7 (commit 157a792, merged to `main`): configurable minimum length, toolbar popup with per-site switch, editable sensitive-site list, keyboard shortcut, fix for already-focused fields ([feature note](../features/sites-and-shortcut.md)).
   Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 90 e2e passed.
+
+- Slice 8 setup guide (branch `slice-8-onboarding`): four-step first-run guide, shared provider form, saves only after a successful test ([feature note](../features/onboarding.md)).
+  Evidence: `npm run validate` exit 0 on 2026-10-20 — 156 unit, 95 e2e passed.
 
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
+- Setup guide with a cloud provider through the real permission prompt: check by hand on a fresh install.
 - Shortcut `Alt+Shift+C` assignment on a real install not verified (not assigned in the automated test browser).
 - Manual site check on Gmail, LinkedIn, X, Outlook ([checklist](../operations/manual-checklist.md)) — needs the user, not run.
 - Untested with real keys/servers: Groq (`openai/gpt-oss-120b`), Anthropic (`claude-haiku-5-5`), Ollama, LM Studio.
@@ -47,7 +51,7 @@ _Nothing._
 - CI workflow not yet run on GitHub (nothing pushed).
 
 ## Next priorities
-1. Slice 8 — onboarding guide (FR-014).
+1. Slice 9 — Firefox, Brave and Edge pass; accessibility pass; size budget check.
 
 ## Last reviewed
-2026-10-20 — slices 0–7 checked with `npm run validate`.
+2026-10-20 — slices 0–8 checked with `npm run validate`.

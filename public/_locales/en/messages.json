@@ -266,5 +266,172 @@
   },
   "options_shortcutChange": {
     "message": "Change it in your browser's extension shortcut settings (Chrome, Brave, Edge: open chrome://extensions/shortcuts; Firefox: Add-ons ▸ gear menu ▸ Manage Extension Shortcuts)."
+  },
+  "options_openGuide": {
+    "message": "Open the setup guide"
+  },
+  "guide_progress": {
+    "message": "Step $STEP$ of $TOTAL$",
+    "placeholders": {
+      "step": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "guide_welcomeHeading": {
+    "message": "Welcome to Corretto"
+  },
+  "guide_welcomeLead": {
+    "message": "Corretto adds a small button to text fields. Click it to get three rewrites of your text (a minimal fix, a more fluid version and a more formal one) in the same language, then pick one. It uses an AI provider you choose, with your own key. Corretto itself is free and collects no data."
+  },
+  "guide_chooseProvider": {
+    "message": "Choose an AI provider"
+  },
+  "guide_groupFree": {
+    "message": "Free to start"
+  },
+  "guide_groupLocal": {
+    "message": "On your computer"
+  },
+  "guide_groupPaid": {
+    "message": "Paid"
+  },
+  "guide_recommended": {
+    "message": "Recommended"
+  },
+  "guide_about_gemini": {
+    "message": "Free tier with a Google account. Fast, many languages."
+  },
+  "guide_about_groq": {
+    "message": "Free tier, very fast open models."
+  },
+  "guide_about_mistral": {
+    "message": "Free tier, a European provider."
+  },
+  "guide_about_openrouter": {
+    "message": "One key for many models, some of them free."
+  },
+  "guide_about_ollama": {
+    "message": "Free and private: your text never leaves this computer. Needs a capable computer."
+  },
+  "guide_about_lmstudio": {
+    "message": "Free and private, with a desktop app to download models."
+  },
+  "guide_about_anthropic": {
+    "message": "Claude models. Pay per use with your Anthropic account."
+  },
+  "guide_about_openai": {
+    "message": "GPT models. Pay per use with your OpenAI account."
+  },
+  "guide_continue": {
+    "message": "Continue"
+  },
+  "guide_back": {
+    "message": "Back"
+  },
+  "guide_keyHeading": {
+    "message": "Get your $NAME$ API key",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_setUpHeading": {
+    "message": "Set up $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_openSite": {
+    "message": "Open the $NAME$ key page",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_signInFree": {
+    "message": "sign in or create a free account."
+  },
+  "guide_signInPaid": {
+    "message": "sign in or create an account and add a payment method."
+  },
+  "guide_createKey": {
+    "message": "Create a new API key and copy it."
+  },
+  "guide_keepPrivate": {
+    "message": "Treat the key like a password. Corretto keeps it only in this browser and sends it only to this provider."
+  },
+  "guide_ollamaPull": {
+    "message": "Download a model. Open a terminal and run, for example:"
+  },
+  "guide_ollamaRun": {
+    "message": "Keep Ollama running while you use Corretto."
+  },
+  "guide_ollamaOrigins": {
+    "message": "If the test in the next step fails with a 403 error, allow browser extensions in Ollama’s settings or environment, then restart it:"
+  },
+  "guide_lmstudioModel": {
+    "message": "In LM Studio, download a model and load it."
+  },
+  "guide_lmstudioServer": {
+    "message": "Start the local server in the Developer tab (port 1234). If the test in the next step fails, turn on CORS in the server settings."
+  },
+  "guide_privacyFree": {
+    "message": "Privacy: your text is sent to $NAME$ when you click the button. Free tiers may use what you send to improve their models; read their terms. For private text, prefer a paid plan or a model on your computer.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_privacyPaid": {
+    "message": "Privacy: your text is sent to $NAME$ when you click the button and billed to your account. Check their data policy.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_privacyLocal": {
+    "message": "Privacy: your text stays on this computer."
+  },
+  "guide_connectHeading": {
+    "message": "Connect $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "guide_testAndSave": {
+    "message": "Test and save"
+  },
+  "guide_readyHeading": {
+    "message": "You’re ready"
+  },
+  "guide_tipButton": {
+    "message": "Type a few words in any text field: the Corretto button appears in its bottom-right corner."
+  },
+  "guide_tipSelection": {
+    "message": "Select part of the text first to rewrite only that part."
+  },
+  "guide_tipShortcut": {
+    "message": "Or press the keyboard shortcut (Alt+Shift+C by default) in a text field."
+  },
+  "guide_tipToolbar": {
+    "message": "Use the Corretto toolbar button to turn it off on a site. It never appears on password fields or on banking, health and government sites in your sensitive list."
+  },
+  "guide_tipUndo": {
+    "message": "After replacing, click Undo or press Ctrl+Z to get your text back."
+  },
+  "guide_finish": {
+    "message": "Close this tab"
   }
 }

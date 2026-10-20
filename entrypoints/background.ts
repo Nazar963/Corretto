@@ -33,6 +33,11 @@ export default defineBackground(() => {
     });
   });
 
+  // FR-014: the setup guide opens once, on first install; not on updates or browser restarts.
+  browser.runtime.onInstalled.addListener(({ reason }) => {
+    if (reason === 'install') void browser.tabs.create({ url: browser.runtime.getURL('/welcome.html') });
+  });
+
   // Keyboard shortcut (FR-010): tell the tab; the frame holding focus opens the popup.
   const onCommand = async (command: string, tab?: { id?: number }) => {
     if (command !== 'rewrite') return;
