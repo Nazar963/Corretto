@@ -1,14 +1,22 @@
 {
   "permissions": {
+    "additionalDirectories": [
+      "~/dev-memory"
+    ],
     "allow": [
-      "Edit(docs/status/**)",
-      "Edit(docs/features/**)",
-      "Edit(docs/architecture/**)",
-      "Edit(docs/operations/**)"
+      "Edit(~/dev-memory/programs/corretto/status/**)",
+      "Edit(~/dev-memory/programs/corretto/features/**)",
+      "Edit(~/dev-memory/programs/corretto/architecture/**)",
+      "Edit(~/dev-memory/programs/corretto/operations/**)"
     ],
     "ask": [
-      "Edit(docs/adr/**)",
-      "Edit(docs/requirements/**)",
+      "Edit(~/dev-memory/programs/corretto/adr/**)",
+      "Edit(~/dev-memory/programs/corretto/requirements/**)",
+      "Edit(~/dev-memory/programs/corretto/OVERVIEW.md)",
+      "Edit(~/dev-memory/shared/**)",
+      "Edit(~/dev-memory/decisions/**)",
+      "Edit(~/dev-memory/agents/**)",
+      "Edit(~/dev-memory/MEMORY.md)",
       "Edit(CLAUDE.md)"
     ],
     "deny": [
