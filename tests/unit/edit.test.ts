@@ -11,24 +11,24 @@ describe('textarea', () => {
   });
 
   describe('captureTarget (FR-004)', () => {
-    it('uses the whole value when nothing is selected', () => {
+    it('uses the whole value when nothing is selected', async () => {
       field.setSelectionRange(3, 3);
       expect(captureTarget(field).text).toBe('hello wrld, how are you');
     });
 
-    it('uses the selection when there is one', () => {
+    it('uses the selection when there is one', async () => {
       field.setSelectionRange(6, 10);
       expect(captureTarget(field).text).toBe('wrld');
     });
 
-    it('ignores a whitespace-only selection', () => {
+    it('ignores a whitespace-only selection', async () => {
       field.setSelectionRange(5, 6);
       expect(captureTarget(field).text).toBe('hello wrld, how are you');
     });
   });
 
   describe('replaceRange (FR-007)', () => {
-    it('replaces the range and fires an input event', () => {
+    it('replaces the range and fires an input event', async () => {
       let inputs = 0;
       field.addEventListener('input', () => inputs++);
       replaceRange(field, 6, 10, 'world');
@@ -38,34 +38,34 @@ describe('textarea', () => {
     });
   });
 
-  it('replaces only the captured selection', () => {
+  it('replaces only the captured selection', async () => {
     field.setSelectionRange(6, 10);
-    captureTarget(field).replace('world');
+    await captureTarget(field).replace('world');
     expect(field.value).toBe('hello world, how are you');
   });
 
-  it('refuses to replace if the user typed while waiting', () => {
+  it('refuses to replace if the user typed while waiting', async () => {
     const target = captureTarget(field);
     field.value += '!';
-    expect(target.replace('Hello world.')).toBeNull();
+    expect(await target.replace('Hello world.')).toBeNull();
     expect(field.value).toBe('hello wrld, how are you!');
   });
 
   describe('undo (FR-008)', () => {
-    it('restores the original text and selection', () => {
+    it('restores the original text and selection', async () => {
       field.setSelectionRange(6, 10);
-      const replacement = captureTarget(field).replace('world')!;
+      const replacement = (await captureTarget(field).replace('world'))!;
       expect(field.value).toBe('hello world, how are you');
-      expect(replacement.undo()).toBe(true);
+      expect(await replacement.undo()).toBe(true);
       expect(field.value).toBe('hello wrld, how are you');
       expect([field.selectionStart, field.selectionEnd]).toEqual([6, 10]);
     });
 
-    it('refuses to undo after the user edited the field', () => {
-      const replacement = captureTarget(field).replace('Hello world, how are you?')!;
+    it('refuses to undo after the user edited the field', async () => {
+      const replacement = (await captureTarget(field).replace('Hello world, how are you?'))!;
       field.value += '!';
       expect(replacement.canUndo()).toBe(false);
-      expect(replacement.undo()).toBe(false);
+      expect(await replacement.undo()).toBe(false);
       expect(field.value).toBe('Hello world, how are you?!');
     });
   });
@@ -89,51 +89,51 @@ describe('contenteditable (fallback path)', () => {
     selection.addRange(range);
   }
 
-  it('captures the whole text with block breaks', () => {
+  it('captures the whole text with block breaks', async () => {
     expect(captureTarget(host).text).toBe('Hello wrld, how\nare you');
   });
 
-  it('captures and replaces only the selection', () => {
+  it('captures and replaces only the selection', async () => {
     selectText(host.querySelector('b')!.firstChild!, 0, 4);
     const target = captureTarget(host);
     expect(target.text).toBe('wrld');
-    const replacement = target.replace('world')!;
+    const replacement = (await target.replace('world'))!;
     expect(replacement.method).toBe('range');
     expect(host.innerText).toBe('Hello world, how\nare you');
   });
 
-  it('replaces the whole content as plain text with line breaks and fires input', () => {
+  it('replaces the whole content as plain text with line breaks and fires input', async () => {
     let inputs = 0;
     host.addEventListener('input', () => inputs++);
-    captureTarget(host).replace('Hello world,\nhow are you?');
+    await captureTarget(host).replace('Hello world,\nhow are you?');
     expect(host.innerHTML).toBe('Hello world,<br>how are you?');
     expect(inputs).toBe(1);
   });
 
-  it('undo puts the original nodes back, formatting included', () => {
+  it('undo puts the original nodes back, formatting included', async () => {
     const original = host.innerHTML;
-    const replacement = captureTarget(host).replace('Hello world, how are you?')!;
-    expect(replacement.undo()).toBe(true);
+    const replacement = (await captureTarget(host).replace('Hello world, how are you?'))!;
+    expect(await replacement.undo()).toBe(true);
     expect(host.innerHTML).toBe(original);
   });
 
-  it('refuses to undo after an edit', () => {
-    const replacement = captureTarget(host).replace('Hello world.')!;
+  it('refuses to undo after an edit', async () => {
+    const replacement = (await captureTarget(host).replace('Hello world.'))!;
     host.append('!');
     expect(replacement.canUndo()).toBe(false);
-    expect(replacement.undo()).toBe(false);
+    expect(await replacement.undo()).toBe(false);
   });
 
-  it('refuses to replace if the text changed while waiting', () => {
+  it('refuses to replace if the text changed while waiting', async () => {
     const target = captureTarget(host);
     host.querySelector('p')!.append(' extra');
-    expect(target.replace('Hello world.')).toBeNull();
+    expect(await target.replace('Hello world.')).toBeNull();
   });
 
-  it('refuses to replace if the editor re-rendered the selected nodes', () => {
+  it('refuses to replace if the editor re-rendered the selected nodes', async () => {
     selectText(host.querySelector('b')!.firstChild!, 0, 4);
     const target = captureTarget(host);
     host.innerHTML = '<p>Hello <b>wrld</b>, how</p><p>are you</p>'; // same text, new nodes
-    expect(target.replace('world')).toBeNull();
+    expect(await target.replace('world')).toBeNull();
   });
 });

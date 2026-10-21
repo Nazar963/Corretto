@@ -33,10 +33,13 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@lexical/history": "^0.52.0",
+    "@lexical/plain-text": "^0.52.0",
     "@playwright/test": "^1.64.1",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "happy-dom": "^21.0.3",
+    "lexical": "^0.52.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "typescript": "~6.0.3",

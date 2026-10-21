@@ -42,11 +42,14 @@ Slice 10 — release preparation (store submission waits on the user) (see [road
 - Fix (on `main`): Corretto now reaches tabs open before install/update on Chromium (all-sites host access + `scripting`, user's decision), privacy policy permissions updated, effective date 20 October 2026.
   Evidence (2026-10-20): `npm run validate` exit 0 — 156 unit, 105 e2e; Edge 105, Brave 105; `existing-tabs.spec.ts` also in branded Chrome 155; `npm run test:firefox` 6 passed.
 
+- Fix (on `main`, 2026-10-21): rich editors that keep their own model (WhatsApp Web / Lexical, strict paste-only editors) now get the replacement; button re-checks on keyup; popup fits small iframes ([contenteditable](../features/contenteditable.md)).
+  Evidence: `npm run validate` exit 0 — 157 unit, 110 e2e; Edge 110, Brave 110; `npm run test:firefox` 6 passed; zips rebuilt.
+
 ## In progress
 _Nothing._
 
 ## Blocked / open questions
-- User reported no button on Gmail/Notion (2026-10-20); fix above needs the user's confirmation after reloading the extension. Notion untested here (needs an account).
+- User reported no button on Gmail/Notion (2026-10-20) and no replacement on WhatsApp (2026-10-21); both fixes need the user's confirmation after reloading the extension. Notion and WhatsApp untested here (need accounts).
 - **Release blocked on the user** (see checklist in [release](../operations/release.md)): enable GitHub Pages and push, set the policy's effective date, store developer accounts, legal review of the policy. Done 2026-10-20: icon from the user's artwork, promo tile, contact address, version 1.0.0.
   Evidence: `npm run validate` exit 0 (156 unit, 103 e2e, size 90 KB gz), `npm run test:firefox` 6 passed, `web-ext lint` 0 errors / 1 known warning, zips `corretto-1.0.0-*`.
 - GitHub Actions (CI, Pages, submit) have never run: nothing pushed.

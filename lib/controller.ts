@@ -58,9 +58,14 @@ export function startController({ label, onActivate, signal, minimum = () => DEF
     }, HIDE_DELAY_MS);
   });
 
-  listen('input', (event) => {
-    if (eventTarget(event) === current) evaluate();
-  });
+  // Editors that handle typing themselves (keydown + preventDefault, as in Notion-style editors)
+  // fire no `input` event, so also re-check after each key.
+  for (const type of ['input', 'keyup'] as const) {
+    listen(type, (event) => {
+      const target = eventTarget(event);
+      if (current && target instanceof Node && (target === current || current.contains(target))) evaluate();
+    });
+  }
 
   const reposition = () => button.schedulePosition();
   window.addEventListener('scroll', reposition, { capture: true, passive: true, signal });

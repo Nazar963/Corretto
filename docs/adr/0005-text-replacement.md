@@ -33,3 +33,7 @@ Order: (1) `document.execCommand('insertText')` on the saved selection; (2) for 
 - Before replacing, check the field text (and, for contenteditable, the captured Range) is unchanged since capture; otherwise do nothing and ask the user to retry.
 - contenteditable undo: try `execCommand('undo')`; if the text is not restored (editors that re-render break the native stack), insert the captured original text as plain text.
 - Tests: `tests/e2e/contenteditable.spec.ts`, `tests/unit/edit.test.ts`.
+
+## Refinements (2026-10-21, still proposed)
+- contenteditable replacement is asynchronous: select text-node to text-node, yield a turn, `insertText`; if not taken, yield and dispatch a synthetic `paste`; only then edit the DOM. Whole-field success requires an exact (whitespace-normalized) match.
+- Reason: WhatsApp Web (Lexical) ignored whole-field replacement; reproduced with a real Lexical fixture (`tests/e2e/lexical.spec.ts`).

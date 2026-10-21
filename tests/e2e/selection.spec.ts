@@ -57,7 +57,7 @@ test.describe('selection inside iframes', () => {
     await selectInEditable(body, 6, 13);
     await frame.locator('corretto-button').click();
     await pickMinimal(frame);
-    expect(await innerText(body)).toBe('i has [minimal] a apple and it are red');
+    await expect.poll(() => innerText(body)).toBe('i has [minimal] a apple and it are red');
   });
 });
 
@@ -89,7 +89,7 @@ test.describe('fields inside an open shadow root', () => {
     await field.pressSequentially(TEXT);
     await page.locator('corretto-button').click();
     await page.locator('corretto-panel').getByRole('button', { name: /More fluid/ }).click();
-    expect(await innerText(field)).toBe(`[fluent] ${TEXT}`);
+    await expect.poll(() => innerText(field)).toBe(`[fluent] ${TEXT}`);
   });
 
   test('contenteditable: selection only', async ({ page }) => {
@@ -99,7 +99,7 @@ test.describe('fields inside an open shadow root', () => {
     await selectInEditable(field, 6, 13);
     await page.locator('corretto-button').click();
     await pickMinimal(page);
-    expect(await innerText(field)).toBe('i has [minimal] a apple and it are red');
+    await expect.poll(() => innerText(field)).toBe('i has [minimal] a apple and it are red');
   });
 
   test('contenteditable: undo restores the original', async ({ page }) => {
@@ -109,6 +109,6 @@ test.describe('fields inside an open shadow root', () => {
     await page.locator('corretto-button').click();
     await page.locator('corretto-panel').getByRole('button', { name: /More fluid/ }).click();
     await page.locator('corretto-panel').getByRole('button', { name: 'Undo' }).click();
-    expect(await innerText(field)).toBe(TEXT);
+    await expect.poll(() => innerText(field)).toBe(TEXT);
   });
 });

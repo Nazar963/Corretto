@@ -48,7 +48,7 @@ test.describe('FR-007: replacement in contenteditable', () => {
     await typeInto(editor, TEXT);
     await page.locator('corretto-button').click();
     await option(page, /More fluid/).click();
-    expect(await innerText(editor)).toBe(`[fluent] ${TEXT}`);
+    await expect.poll(() => innerText(editor)).toBe(`[fluent] ${TEXT}`);
     await expect(panel(page).getByText('Replaced')).toBeVisible();
   });
 
@@ -57,8 +57,9 @@ test.describe('FR-007: replacement in contenteditable', () => {
     await editor.click();
     await page.locator('corretto-button').click();
     await option(page, /More formal/).click();
-    const text = await editor.evaluate((el: HTMLElement) => el.innerText);
-    expect(text.split('\n').filter(Boolean)).toEqual(['[formal] Hello wrld how', 'are you today']);
+    await expect
+      .poll(async () => (await editor.evaluate((el: HTMLElement) => el.innerText)).split('\n').filter(Boolean))
+      .toEqual(['[formal] Hello wrld how', 'are you today']);
   });
 
   test('replaces only the selection inside formatted text', async ({ page }) => {
@@ -75,7 +76,7 @@ test.describe('FR-007: replacement in contenteditable', () => {
     await page.locator('corretto-button').click();
     await expect(option(page, /Minimal fix/)).toContainText('[minimal] wrld');
     await option(page, /Minimal fix/).click();
-    expect(await innerText(editor)).toBe('Hello [minimal] wrld how are you today');
+    await expect.poll(() => innerText(editor)).toBe('Hello [minimal] wrld how are you today');
   });
 
   test('a re-rendering editor model sees the replacement', async ({ page }) => {
@@ -86,12 +87,27 @@ test.describe('FR-007: replacement in contenteditable', () => {
     expect(normalize(model)).toBe(`[fluent] ${TEXT}`);
   });
 
-  test('works in an editable iframe body', async ({ page }) => {
+  test('works in an editable iframe body, with the popup fitting inside the frame', async ({ page }) => {
     const frame = page.frameLocator('#frame');
     await typeInto(frame.locator('body'), TEXT);
     await frame.locator('corretto-button').click();
-    await frame.locator('corretto-panel').getByRole('button', { name: /More formal/ }).click();
-    expect(await innerText(frame.locator('body'))).toBe(`[formal] ${TEXT}`);
+    const formal = frame.locator('corretto-panel').getByRole('button', { name: /More formal/ });
+    await formal.waitFor();
+    // The 160 px frame is shorter than the popup: it must fit and scroll instead of overflowing.
+    const fit = await frame.locator('body').evaluate(() => {
+      const panel = document.querySelector('corretto-panel')!.shadowRoot!.querySelector('.panel')!;
+      const rect = panel.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, viewport: innerHeight, scrolls: panel.scrollHeight > panel.clientHeight };
+    });
+    expect(fit.top).toBeGreaterThanOrEqual(0);
+    expect(fit.bottom).toBeLessThanOrEqual(fit.viewport);
+    expect(fit.scrolls).toBe(true);
+    // Scroll to the option as a user would; Playwright cannot auto-scroll a shadow-root scroller in an iframe.
+    await page.locator('#frame').scrollIntoViewIfNeeded();
+    await formal.evaluate((el) => el.scrollIntoView({ block: 'nearest' }));
+    const box = (await formal.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect.poll(() => innerText(frame.locator('body'))).toBe(`[formal] ${TEXT}`);
   });
 
   test('typing while the provider works blocks the stale replacement', async ({ page, provider }) => {
@@ -103,7 +119,7 @@ test.describe('FR-007: replacement in contenteditable', () => {
     await page.keyboard.type(' too');
     await option(page, /More fluid/).click();
     await expect(panel(page).getByText('The text changed')).toBeVisible();
-    expect(await innerText(editor)).toBe(`${TEXT} too`);
+    await expect.poll(() => innerText(editor)).toBe(`${TEXT} too`);
   });
 });
 
@@ -115,8 +131,8 @@ test.describe('FR-008: undo in contenteditable', () => {
     await page.locator('corretto-button').click();
     await option(page, /More fluid/).click();
     await panel(page).getByRole('button', { name: 'Undo' }).click();
-    expect(await innerText(editor)).toBe('Hello wrld how are you today');
-    expect(await editor.innerHTML()).toBe(before);
+    await expect.poll(() => innerText(editor)).toBe('Hello wrld how are you today');
+    await expect.poll(() => editor.innerHTML()).toBe(before);
   });
 
   test('native Ctrl+Z undoes the replacement', async ({ page }) => {
@@ -124,9 +140,9 @@ test.describe('FR-008: undo in contenteditable', () => {
     await typeInto(editor, TEXT);
     await page.locator('corretto-button').click();
     await option(page, /More fluid/).click();
-    expect(await innerText(editor)).toBe(`[fluent] ${TEXT}`);
+    await expect.poll(() => innerText(editor)).toBe(`[fluent] ${TEXT}`);
     await page.keyboard.press('Control+z');
-    expect(await innerText(editor)).toBe(TEXT);
+    await expect.poll(() => innerText(editor)).toBe(TEXT);
   });
 
   test('Undo restores the original wording in a re-rendering editor', async ({ page }) => {
@@ -135,8 +151,32 @@ test.describe('FR-008: undo in contenteditable', () => {
     await page.locator('corretto-button').click();
     await option(page, /More formal/).click();
     await panel(page).getByRole('button', { name: 'Undo' }).click();
-    expect(await innerText(editor)).toBe(TEXT);
+    await expect.poll(() => innerText(editor)).toBe(TEXT);
     const model = await page.evaluate(() => (window as unknown as { editorModel: { value: string } }).editorModel.value);
     expect(normalize(model)).toBe(TEXT);
+  });
+});
+
+test.describe('FR-007: strict editors that only accept typing and paste', () => {
+  const model = (page: Page) => page.evaluate(() => (window as unknown as { strictModel: { value: string } }).strictModel.value);
+
+  test('the rewrite reaches the editor model through paste', async ({ page }) => {
+    await page.locator('#strict').click();
+    await page.keyboard.type(TEXT);
+    await expect.poll(() => model(page)).toBe(TEXT);
+    await page.locator('corretto-button').click();
+    await option(page, /More fluid/).click();
+    await expect.poll(() => model(page)).toBe(`[fluent] ${TEXT}`);
+    await expect.poll(() => innerText(page.locator('#strict'))).toBe(`[fluent] ${TEXT}`);
+  });
+
+  test('Undo restores the model', async ({ page }) => {
+    await page.locator('#strict').click();
+    await page.keyboard.type(TEXT);
+    await page.locator('corretto-button').click();
+    await option(page, /More formal/).click();
+    await expect.poll(() => model(page)).toBe(`[formal] ${TEXT}`);
+    await panel(page).getByRole('button', { name: 'Undo' }).click();
+    await expect.poll(() => model(page)).toBe(TEXT);
   });
 });

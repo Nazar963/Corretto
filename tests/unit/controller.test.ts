@@ -68,6 +68,15 @@ describe('controller', () => {
     expect(visible()).toBe(true);
   });
 
+  it('re-checks on keyup for editors that fire no input event', () => {
+    const field = document.querySelector<HTMLTextAreaElement>('#t')!;
+    field.focus();
+    field.value = 'typed by an editor without input events';
+    expect(visible()).toBe(false);
+    field.dispatchEvent(new KeyboardEvent('keyup', { key: 's', bubbles: true, composed: true }));
+    expect(visible()).toBe(true);
+  });
+
   it('never shows on an excluded field', () => {
     const field = document.querySelector<HTMLInputElement>('#p')!;
     field.focus();

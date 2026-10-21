@@ -41,6 +41,40 @@
     });
   </script>
 
+  <!-- Strict model editor (some Draft.js/Slate setups): typing and paste go through its model;
+       any other DOM change (including execCommand insertText) is reverted on input. -->
+  <div id="strict" contenteditable="true" class="editor"></div>
+  <script>
+    const strict = document.getElementById('strict');
+    window.strictModel = { value: '' };
+    const show = () => {
+      strict.textContent = window.strictModel.value;
+      const range = document.createRange();
+      range.selectNodeContents(strict);
+      range.collapse(false);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    };
+    strict.addEventListener('keydown', (event) => {
+      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        window.strictModel.value += event.key;
+        show();
+      }
+    });
+    strict.addEventListener('paste', (event) => {
+      event.preventDefault();
+      const text = event.clipboardData.getData('text/plain');
+      const selected = getSelection().toString();
+      const value = window.strictModel.value;
+      window.strictModel.value = selected && value.includes(selected) ? value.replace(selected, text) : value + text;
+      show();
+    });
+    strict.addEventListener('input', () => {
+      if (strict.textContent !== window.strictModel.value) show();
+    });
+  </script>
+
   <iframe id="frame" src="/editable-frame.html" width="500" height="160"></iframe>
 </body>
 </html>

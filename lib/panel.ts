@@ -44,6 +44,7 @@ const STYLE = `
     border-radius: 10px;
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
     padding: 6px;
+    overflow-y: auto;
   }
   .row { display: flex; align-items: center; gap: 8px; padding: 8px; }
   .grow { flex: 1; }
@@ -279,6 +280,8 @@ export class Panel {
 
   private position() {
     if (!this.anchor) return;
+    // Never taller than the frame (small iframes, chat widgets): scroll inside instead.
+    this.content.style.maxHeight = `${Math.max(80, window.innerHeight - 2 * MARGIN)}px`;
     const size = this.content.getBoundingClientRect();
     const { left, top } = computePanelPosition(this.anchor.getBoundingClientRect(), size, {
       width: window.innerWidth,

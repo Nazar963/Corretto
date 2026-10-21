@@ -4,14 +4,14 @@
 
 import { isTextField, type Field, type TextField } from './fields';
 
-export type ReplaceMethod = 'insertText' | 'setRangeText' | 'range';
+export type ReplaceMethod = 'insertText' | 'paste' | 'setRangeText' | 'range';
 
 export interface Replacement {
   method: ReplaceMethod;
   /** Whether `undo` can still restore the original text (the field is unchanged since). */
   canUndo(): boolean;
-  /** Restore the original text and selection. Returns false if the field was edited since. */
-  undo(): boolean;
+  /** Restore the original text and selection. Resolves false if the field was edited since. */
+  undo(): Promise<boolean>;
 }
 
 export interface Target {
@@ -20,8 +20,8 @@ export interface Target {
   text: string;
   /** Put focus and the original selection back (Esc, Cancel). */
   restoreSelection(): void;
-  /** Replace the captured range, or return null if the field changed since capture. */
-  replace(text: string): Replacement | null;
+  /** Replace the captured range, or resolve null if the field changed since capture. */
+  replace(text: string): Promise<Replacement | null>;
 }
 
 export function captureTarget(field: Field): Target {
@@ -76,7 +76,7 @@ function captureTextField(field: TextField): Target {
     field,
     text: value.slice(start, end),
     restoreSelection,
-    replace(text) {
+    async replace(text) {
       // The user typed while the provider was working: offsets no longer match.
       if (!field.isConnected || field.value !== value) return null;
       const original = value.slice(start, end);
@@ -86,7 +86,7 @@ function captureTextField(field: TextField): Target {
       return {
         method,
         canUndo,
-        undo() {
+        async undo() {
           if (!canUndo()) return false;
           replaceRange(field, start, start + text.length, original);
           restoreSelection();
@@ -99,6 +99,13 @@ function captureTextField(field: TextField): Target {
 
 // ---------------------------------------------------------------------------
 // contenteditable
+
+/**
+ * Model-driven editors (Lexical in WhatsApp/Messenger, ProseMirror, Slate, Draft.js) read the
+ * DOM selection on `selectionchange` and commit their own edits asynchronously. Give them a turn
+ * of the event loop after changing the selection and after inserting, before checking the result.
+ */
+export const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
 function selectionIn(host: HTMLElement): Range | null {
   const selection = host.ownerDocument.getSelection();
@@ -113,6 +120,39 @@ function select(host: HTMLElement, range: Range) {
   selection?.addRange(range);
 }
 
+/**
+ * The whole text, from the first character of the first text node to the end of the last one.
+ * Editors map that to their own model; a range on the host element itself (selectNodeContents)
+ * is ignored by Lexical, which is why whole-message rewrites failed on WhatsApp.
+ */
+function wholeTextRange(host: HTMLElement): Range {
+  const doc = host.ownerDocument;
+  const range = doc.createRange();
+  const walker = doc.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+  const first = walker.nextNode() as Text | null;
+  if (!first) {
+    range.selectNodeContents(host);
+    return range;
+  }
+  let last = first;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) last = node as Text;
+  range.setStart(first, 0);
+  range.setEnd(last, last.length);
+  return range;
+}
+
+/** Hand the text to the editor as a paste: editors that ignore insertText handle paste themselves. */
+function tryPaste(host: HTMLElement, text: string): boolean {
+  try {
+    const data = new DataTransfer();
+    data.setData('text/plain', text);
+    host.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Plain text as nodes, with <br> for line breaks. */
 function textFragment(doc: Document, text: string): DocumentFragment {
   const fragment = doc.createDocumentFragment();
@@ -123,17 +163,47 @@ function textFragment(doc: Document, text: string): DocumentFragment {
   return fragment;
 }
 
+/**
+ * Put `text` in place of `rangeFor()` through the editor's own input paths: insertText, then a
+ * paste event. Each attempt reselects (editors may have re-rendered) and is checked after the
+ * editor has had its turn. Resolves the method that worked, or null if the editor took neither.
+ */
+async function insertThroughEditor(
+  host: HTMLElement,
+  rangeFor: () => Range,
+  text: string,
+  whole: boolean,
+): Promise<'insertText' | 'paste' | null> {
+  const before = normalize(host.innerText);
+  const wanted = normalize(text);
+  // Whole field: it must now equal the new text ("contains" is not enough: a rewrite often
+  // contains the original, e.g. one that only adds a full stop). Selection: it must have
+  // changed and contain the new text.
+  const took = (now: string) => (whole ? now === wanted : now !== before && now.includes(wanted));
+  const attempts = [
+    ['insertText', () => tryInsertText(text)],
+    ['paste', () => tryPaste(host, text)],
+  ] as const;
+  for (const [method, attempt] of attempts) {
+    host.focus({ preventScroll: true });
+    select(host, rangeFor());
+    await settle();
+    if (!attempt()) continue;
+    await settle();
+    const now = normalize(host.innerText);
+    if (took(now)) return method;
+    // Something changed, but not into the new text: stop rather than stack more edits on top.
+    if (now !== before) return null;
+  }
+  return null;
+}
+
 function captureEditable(host: HTMLElement): Target {
   const doc = host.ownerDocument;
   const saved = selectionIn(host);
   const selectedText = saved && !saved.collapsed ? (doc.getSelection()?.toString() ?? '') : '';
   const useSelection = selectedText.trim() !== '';
-  const whole = (): Range => {
-    const range = doc.createRange();
-    range.selectNodeContents(host);
-    return range;
-  };
-  const range = useSelection ? saved! : whole();
+  const range = useSelection ? saved! : wholeTextRange(host);
   const snapshot = host.innerText;
 
   const restoreSelection = () => {
@@ -145,33 +215,35 @@ function captureEditable(host: HTMLElement): Target {
     field: host,
     text: useSelection ? selectedText : snapshot,
     restoreSelection,
-    replace(text) {
+    async replace(text) {
       // Editors re-render often; only replace if the text and the range are still what we sent.
       const intact = range.startContainer.isConnected && host.contains(range.commonAncestorContainer);
-      if (!host.isConnected || !intact || normalize(host.innerText) !== normalize(snapshot)) return null;
+      if (!host.isConnected || normalize(host.innerText) !== normalize(snapshot)) return null;
+      if (useSelection && !intact) return null;
 
-      host.focus({ preventScroll: true });
-      select(host, useSelection ? range : whole());
-      if (tryInsertText(text) && normalize(host.innerText).includes(normalize(text))) {
+      const method = await insertThroughEditor(host, () => (useSelection ? range : wholeTextRange(host)), text, !useSelection);
+      if (method) {
         const after = host.innerText;
         const canUndo = () => host.isConnected && host.innerText === after;
         return {
-          method: 'insertText',
+          method,
           canUndo,
-          undo() {
+          async undo() {
             if (!canUndo()) return false;
-            host.focus({ preventScroll: true });
-            // Native undo also reaches editors with their own history (beforeinput historyUndo).
-            try {
-              document.execCommand('undo');
-            } catch {
-              // Handled by the check below.
+            if (method === 'insertText') {
+              host.focus({ preventScroll: true });
+              try {
+                // Native undo keeps formatting where the browser's undo stack is intact.
+                document.execCommand('undo');
+              } catch {
+                // Handled by the check below.
+              }
+              await settle();
             }
             if (normalize(host.innerText) !== normalize(snapshot)) {
-              // Editors that re-render their DOM can break the native undo stack.
-              // Fall back to the original wording as plain text; formatting may be lost.
-              select(host, whole());
-              tryInsertText(snapshot);
+              // Editors that re-render their DOM, or that took a paste, keep their own history:
+              // put the original wording back through the same input paths (as plain text).
+              await insertThroughEditor(host, () => wholeTextRange(host), snapshot, true);
               if (normalize(host.innerText) !== normalize(snapshot)) return false;
             }
             restoreSelection();
@@ -180,8 +252,11 @@ function captureEditable(host: HTMLElement): Target {
         };
       }
 
-      // Fallback: edit the DOM directly and tell the page with an input event.
-      const target = useSelection ? range : whole();
+      // Last resort: edit the DOM directly and tell the page with an input event.
+      if (normalize(host.innerText) !== normalize(snapshot)) return null;
+      // The whole element here (not the text-to-text range), so block structure comes back intact on undo.
+      const target = useSelection ? range : doc.createRange();
+      if (!useSelection) target.selectNodeContents(host);
       const removed = target.extractContents();
       const inserted = textFragment(doc, text);
       const nodes = [...inserted.childNodes];
@@ -198,7 +273,7 @@ function captureEditable(host: HTMLElement): Target {
       return {
         method: 'range',
         canUndo,
-        undo() {
+        async undo() {
           if (!canUndo()) return false;
           const first = nodes[0];
           const restore = doc.createRange();
@@ -214,4 +289,3 @@ function captureEditable(host: HTMLElement): Target {
     },
   };
 }
-

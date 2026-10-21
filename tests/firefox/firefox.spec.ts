@@ -110,7 +110,7 @@ test('textarea: button, three options, replace, undo', async () => {
   await firefox.click(await host('corretto-button'));
   await firefox.click(await option('fluent'));
   const value = () => firefox.run<string>(`return document.querySelector('#textarea').value;`);
-  expect(await value()).toBe(`[fluent] ${TEXT}`);
+  await waitFor('replaced text', async () => (await value()) === `[fluent] ${TEXT}`);
   expect(provider.requests.at(-1)!.body.messages.at(-1)!.content).toBe(TEXT);
 
   await firefox.click(await waitFor('undo', async () => firefox.find('button.action', await shadow('corretto-panel'))));
@@ -137,8 +137,9 @@ test('contenteditable: replaces rich text and undo restores formatting', async (
   await waitFor('button', buttonVisible);
   await firefox.click(await host('corretto-button'));
   await firefox.click(await option('formal'));
-  const text = await firefox.run<string>(`return document.querySelector('#rich').innerText;`);
-  expect(text.split('\n').filter(Boolean)).toEqual(['[formal] Hello wrld how', 'are you today']);
+  const lines = async () =>
+    (await firefox.run<string>(`return document.querySelector('#rich').innerText;`)).split('\n').filter(Boolean);
+  await waitFor('rich text replaced', async () => JSON.stringify(await lines()) === JSON.stringify(['[formal] Hello wrld how', 'are you today']));
   await firefox.click(await waitFor('undo', async () => firefox.find('button.action', await shadow('corretto-panel'))));
   await waitFor('original markup', async () => (await firefox.run<string>(`return document.querySelector('#rich').innerHTML;`)) === before);
 });
@@ -164,8 +165,11 @@ test('contenteditable inside a shadow root: selection only', async () => {
   );
   expect(label).toBe('[minimal] a apple');
   await firefox.click(minimal);
-  const text = await firefox.run<string>(
-    `return document.querySelector('#widget').shadowRoot.querySelector('#shadow-editable').innerText;`,
-  );
-  expect(text.replace(/\s+/g, ' ').trim()).toBe('i has [minimal] a apple and it are red');
+  const shadowText = async () =>
+    (
+      await firefox.run<string>(`return document.querySelector('#widget').shadowRoot.querySelector('#shadow-editable').innerText;`)
+    )
+      .replace(/\s+/g, ' ')
+      .trim();
+  await waitFor('selection replaced', async () => (await shadowText()) === 'i has [minimal] a apple and it are red');
 });

@@ -38,9 +38,9 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
       onDismiss: () => {},
     });
 
-  const pick = (target: Target, text: string) => {
+  const pick = async (target: Target, text: string) => {
     panel.close();
-    const replacement = target.replace(text);
+    const replacement = await target.replace(text);
     const { field } = target;
     if (!replacement) {
       showChanged(field);
@@ -54,8 +54,8 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
     panel.showToast(field, {
       onUndo: () => {
         field.removeEventListener('input', onEdit);
-        replacement.undo();
         panel.close();
+        void replacement.undo();
       },
       onClose: () => field.removeEventListener('input', onEdit),
     });
@@ -107,7 +107,7 @@ export function createRewriteFlow({ panel, strings, request, openSettings }: Flo
     }
     const { rewrites } = response;
     panel.showResults(target.field, rewrites, {
-      onPick: (tone) => pick(target, rewrites[tone]),
+      onPick: (tone) => void pick(target, rewrites[tone]),
       onDismiss: onDismiss(target),
     });
   };
