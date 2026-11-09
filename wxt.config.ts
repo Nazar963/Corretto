@@ -46,20 +46,25 @@ export default defineConfig({
       : mode === 'e2e'
         ? { host_permissions: ['http://127.0.0.1/*'] }
         : {}),
-    browser_specific_settings: {
-      gecko: {
-        // Placeholder add-on ID; must stay stable once published on AMO.
-        id: 'corretto@corretto.extension',
-        // 140: first version with Firefox's built-in data consent screen (and the current ESR).
-        strict_min_version: '140.0',
-        // Text the user asks to rewrite (often an email or post) goes to the provider they chose.
-        // Chosen by the user on 2026-10-20; see docs/features/release.md.
-        data_collection_permissions: {
-          required: ['websiteContent', 'personalCommunications'],
-        },
-      },
-      // Mobile is out of scope; if Android is ever enabled, 142 is the first version with the consent key.
-      gecko_android: { strict_min_version: '142.0' },
-    },
+    // Firefox-only key; Chrome reports it as an unrecognized manifest key.
+    ...(browser === 'firefox'
+      ? {
+          browser_specific_settings: {
+            gecko: {
+              // Placeholder add-on ID; must stay stable once published on AMO.
+              id: 'corretto@corretto.extension',
+              // 140: first version with Firefox's built-in data consent screen (and the current ESR).
+              strict_min_version: '140.0',
+              // Text the user asks to rewrite (often an email or post) goes to the provider they chose.
+              // Chosen by the user on 2026-10-20; see docs/operations/release.md.
+              data_collection_permissions: {
+                required: ['websiteContent', 'personalCommunications'],
+              },
+            },
+            // Mobile is out of scope; if Android is ever enabled, 142 is the first version with the consent key.
+            gecko_android: { strict_min_version: '142.0' },
+          },
+        }
+      : {}),
   }),
 });

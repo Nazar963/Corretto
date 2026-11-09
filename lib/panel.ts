@@ -57,7 +57,7 @@ const STYLE = `
     border-radius: 6px;
     cursor: pointer;
   }
-  .option:hover, .option:focus-visible { background: #eff6ff; outline: 2px solid #2563eb; outline-offset: -2px; }
+  .option:hover, .option:focus-visible, .option.active { background: #eff6ff; outline: 2px solid #2563eb; outline-offset: -2px; }
   .label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #4b5563; }
   .detail { display: block; margin-top: 2px; font-size: 12px; color: #4b5563; overflow-wrap: anywhere; }
   .text { display: block; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 8.4em; overflow: auto; }
@@ -80,7 +80,7 @@ const STYLE = `
   @media (prefers-color-scheme: dark) {
     .panel { color: #f3f4f6; background: #1f2937; border-color: #374151; }
     .label, .detail { color: #9ca3af; }
-    .option:hover, .option:focus-visible, .action:hover, .action:focus-visible { background: #1e3a8a; outline-color: #60a5fa; }
+    .option:hover, .option:focus-visible, .option.active, .action:hover, .action:focus-visible { background: #1e3a8a; outline-color: #60a5fa; }
     .action { color: #93c5fd; }
     .spinner { border-color: #1e3a8a; border-top-color: #60a5fa; }
   }
@@ -117,6 +117,8 @@ export class Panel {
   private onToastClose: (() => void) | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | undefined;
   private listeners: AbortController | null = null;
+  /** Highlighted option for keyboard choice; focus itself stays in the field. */
+  private active = 0;
 
   constructor(private readonly strings: Strings) {
     this.host = document.createElement(PANEL_TAG);
@@ -127,7 +129,9 @@ export class Panel {
     this.content.setAttribute('role', 'dialog');
     this.content.setAttribute('aria-label', strings.panelLabel);
     root.append(style, this.content);
-    root.addEventListener('keydown', (event) => this.onKeydown(event as KeyboardEvent));
+    // Never take focus from the page's field: editors such as WhatsApp's restore their own
+    // cursor when they regain focus, which would undo the selection Corretto replaces.
+    root.addEventListener('mousedown', (event) => event.preventDefault());
   }
 
   get isOpen(): boolean {
@@ -165,7 +169,7 @@ export class Panel {
       return option;
     });
     this.open('popup', anchor, options, handlers.onDismiss);
-    options[0]?.focus({ preventScroll: true });
+    this.highlight(0);
   }
 
   showError(
@@ -241,17 +245,9 @@ export class Panel {
         },
         { capture: true, signal },
       );
-      // Esc while focus is still in the field (loading state).
-      document.addEventListener(
-        'keydown',
-        (event) => {
-          if (event.key === 'Escape' && !event.composedPath().includes(this.host)) {
-            event.preventDefault();
-            this.dismiss('escape');
-          }
-        },
-        { capture: true, signal },
-      );
+      // Keys arrive at the field, which keeps focus. Handle them first (window, capture) and
+      // stop them, so the page does not also act on them (Enter would send a WhatsApp message).
+      window.addEventListener('keydown', (event) => this.onKeydown(event), { capture: true, signal });
     }
   }
 
@@ -263,19 +259,32 @@ export class Panel {
 
   private onKeydown(event: KeyboardEvent) {
     if (this.state !== 'popup') return;
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      event.stopPropagation();
-      this.dismiss('escape');
-      return;
-    }
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     const options = [...this.content.querySelectorAll<HTMLButtonElement>('.option')];
-    if (options.length === 0) return;
-    event.preventDefault();
-    const index = options.indexOf(this.root.activeElement as HTMLButtonElement);
-    const step = event.key === 'ArrowDown' ? 1 : -1;
-    options[(index + step + options.length) % options.length]?.focus();
+    const consume = () => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    if (event.key === 'Escape') {
+      consume();
+      this.dismiss('escape');
+    } else if (options.length > 0 && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+      consume();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      this.highlight((this.active + step + options.length) % options.length);
+    } else if (options.length > 0 && event.key === 'Enter' && !event.isComposing) {
+      consume();
+      options[this.active]?.click();
+    }
+  }
+
+  private highlight(index: number) {
+    const options = [...this.content.querySelectorAll<HTMLButtonElement>('.option')];
+    this.active = index;
+    options.forEach((option, i) => {
+      option.classList.toggle('active', i === index);
+      option.setAttribute('aria-current', String(i === index));
+    });
+    options[index]?.scrollIntoView({ block: 'nearest' });
   }
 
   private position() {

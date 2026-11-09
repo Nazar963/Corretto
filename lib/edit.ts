@@ -2,6 +2,7 @@
 // Strategy and fallback order: docs/adr/0005-text-replacement.md.
 // Replacements are plain text; rich formatting in the replaced range is not kept (out of scope).
 
+import { debugLog } from './debug';
 import { isTextField, type Field, type TextField } from './fields';
 
 export type ReplaceMethod = 'insertText' | 'paste' | 'setRangeText' | 'range';
@@ -102,10 +103,58 @@ function captureTextField(field: TextField): Target {
 
 /**
  * Model-driven editors (Lexical in WhatsApp/Messenger, ProseMirror, Slate, Draft.js) read the
- * DOM selection on `selectionchange` and commit their own edits asynchronously. Give them a turn
- * of the event loop after changing the selection and after inserting, before checking the result.
+ * DOM selection on `selectionchange` and commit their own edits asynchronously.
  */
 export const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+/** The next frame, or a short timeout where frames are throttled (hidden tabs, offscreen iframes). */
+function nextFrame(win: Window): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, 50);
+    win.requestAnimationFrame(() => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
+}
+
+/**
+ * Select `range` and wait until the editor has taken it in: the browser's `selectionchange`
+ * (whose order relative to timers is not guaranteed), then a frame for editors that sync their
+ * selection on the next frame. Inserting earlier puts the text at the editor's old caret:
+ * "appends instead of replaces" on WhatsApp Web.
+ */
+async function selectAndSync(host: HTMLElement, range: Range): Promise<void> {
+  const doc = host.ownerDocument;
+  const changed = new Promise<void>((resolve) => {
+    // No event comes when the selection was already exactly this range.
+    const timer = setTimeout(resolve, 150);
+    doc.addEventListener(
+      'selectionchange',
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true },
+    );
+  });
+  select(host, range);
+  await changed;
+  await nextFrame(doc.defaultView ?? window);
+  await settle();
+}
+
+/** Poll for up to `timeoutMs` (frame by frame) until `done()` holds; resolves whether it did. */
+async function waitUntil(host: HTMLElement, done: () => boolean, timeoutMs = 500): Promise<boolean> {
+  const end = Date.now() + timeoutMs;
+  const win = host.ownerDocument.defaultView ?? window;
+  await settle();
+  while (!done()) {
+    if (Date.now() >= end) return false;
+    await nextFrame(win);
+  }
+  return true;
+}
 
 function selectionIn(host: HTMLElement): Range | null {
   const selection = host.ownerDocument.getSelection();
@@ -185,15 +234,23 @@ async function insertThroughEditor(
     ['paste', () => tryPaste(host, text)],
   ] as const;
   for (const [method, attempt] of attempts) {
+    const focusedBefore = host.ownerDocument.activeElement === host || host.contains(host.ownerDocument.activeElement);
     host.focus({ preventScroll: true });
-    select(host, rangeFor());
-    await settle();
-    if (!attempt()) continue;
-    await settle();
-    const now = normalize(host.innerText);
-    if (took(now)) return method;
+    await selectAndSync(host, rangeFor());
+    debugLog(method, {
+      whole,
+      focusedBefore,
+      selected: host.ownerDocument.getSelection()?.toString(),
+      before,
+      wanted,
+    });
+    const ran = attempt();
+    const took_ = ran && (await waitUntil(host, () => took(normalize(host.innerText))));
+    debugLog(method, { ran, took: took_, now: normalize(host.innerText) });
+    if (!ran) continue;
+    if (took_) return method;
     // Something changed, but not into the new text: stop rather than stack more edits on top.
-    if (now !== before) return null;
+    if (normalize(host.innerText) !== before) return null;
   }
   return null;
 }
@@ -205,6 +262,12 @@ function captureEditable(host: HTMLElement): Target {
   const useSelection = selectedText.trim() !== '';
   const range = useSelection ? saved! : wholeTextRange(host);
   const snapshot = host.innerText;
+  debugLog('capture', {
+    editor: [...host.attributes].map((a) => `${a.name}=${a.value}`).join(' ').slice(0, 300),
+    useSelection,
+    selectedText,
+    snapshot,
+  });
 
   const restoreSelection = () => {
     host.focus({ preventScroll: true });

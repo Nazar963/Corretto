@@ -43,3 +43,28 @@ test('Undo restores the original text in the editor model', async ({ page }) => 
   await panel(page).getByRole('button', { name: 'Undo' }).click();
   await expect.poll(() => modelText(page)).toBe(TEXT);
 });
+
+test.describe('editor that syncs its selection a frame late (WhatsApp "appends instead of replaces")', () => {
+  const lagModel = (page: Page) => page.evaluate(() => (window as unknown as { lagModel: { value: string } }).lagModel.value);
+
+  test('the rewrite replaces the text instead of being appended', async ({ page }) => {
+    await page.goto(`${FIXTURE_ORIGIN}/lagging.html`);
+    await page.locator('#lag').click();
+    await page.keyboard.type(TEXT);
+    await expect.poll(() => lagModel(page)).toBe(TEXT);
+    await page.locator('corretto-button').click();
+    await panel(page).getByRole('button', { name: /More fluid/ }).click();
+    await expect.poll(() => lagModel(page)).toBe(`[fluent] ${TEXT}`);
+  });
+
+  test('Undo restores the original instead of appending it', async ({ page }) => {
+    await page.goto(`${FIXTURE_ORIGIN}/lagging.html`);
+    await page.locator('#lag').click();
+    await page.keyboard.type(TEXT);
+    await page.locator('corretto-button').click();
+    await panel(page).getByRole('button', { name: /More formal/ }).click();
+    await expect.poll(() => lagModel(page)).toBe(`[formal] ${TEXT}`);
+    await panel(page).getByRole('button', { name: 'Undo' }).click();
+    await expect.poll(() => lagModel(page)).toBe(TEXT);
+  });
+});

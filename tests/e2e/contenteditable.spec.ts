@@ -83,8 +83,9 @@ test.describe('FR-007: replacement in contenteditable', () => {
     await typeInto(page.locator('#model'), TEXT);
     await page.locator('corretto-button').click();
     await option(page, /More fluid/).click();
-    const model = await page.evaluate(() => (window as unknown as { editorModel: { value: string } }).editorModel.value);
-    expect(normalize(model)).toBe(`[fluent] ${TEXT}`);
+    await expect
+      .poll(async () => normalize(await page.evaluate(() => (window as unknown as { editorModel: { value: string } }).editorModel.value)))
+      .toBe(`[fluent] ${TEXT}`);
   });
 
   test('works in an editable iframe body, with the popup fitting inside the frame', async ({ page }) => {
@@ -152,8 +153,9 @@ test.describe('FR-008: undo in contenteditable', () => {
     await option(page, /More formal/).click();
     await panel(page).getByRole('button', { name: 'Undo' }).click();
     await expect.poll(() => innerText(editor)).toBe(TEXT);
-    const model = await page.evaluate(() => (window as unknown as { editorModel: { value: string } }).editorModel.value);
-    expect(normalize(model)).toBe(TEXT);
+    await expect
+      .poll(async () => normalize(await page.evaluate(() => (window as unknown as { editorModel: { value: string } }).editorModel.value)))
+      .toBe(TEXT);
   });
 });
 

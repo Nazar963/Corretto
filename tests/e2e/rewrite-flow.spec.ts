@@ -34,7 +34,9 @@ test.describe('FR-005 / FR-006: popup', () => {
     await page.locator('#textarea').fill(TEXT);
     await page.locator('#textarea').evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(2, 5));
     await page.locator('corretto-button').click();
-    await expect(option(page, /Minimal fix/)).toBeFocused();
+    // Focus stays in the field; the first option is only highlighted.
+    await expect(option(page, /Minimal fix/)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('#textarea')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(panel(page)).toBeHidden();
     const state = await page.locator('#textarea').evaluate((el: HTMLTextAreaElement) => ({
@@ -54,12 +56,35 @@ test.describe('FR-005 / FR-006: popup', () => {
     await expect(page.locator('#textarea')).toHaveValue(TEXT);
   });
 
-  test('arrow keys and Enter pick an option', async ({ page }) => {
+  test('arrow keys and Enter pick an option while focus stays in the field', async ({ page }) => {
     await openResults(page);
-    await expect(option(page, /Minimal fix/)).toBeFocused();
+    await expect(option(page, /Minimal fix/)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('#textarea')).toBeFocused();
     await page.keyboard.press('ArrowDown');
+    await expect(option(page, /More fluid/)).toHaveAttribute('aria-current', 'true');
+    await expect(option(page, /Minimal fix/)).toHaveAttribute('aria-current', 'false');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await expect(option(page, /More formal/)).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    // Enter picks the option; it must not also reach the field (no line break, no form submit).
     await page.keyboard.press('Enter');
     await expect(page.locator('#textarea')).toHaveValue(`[fluent] ${TEXT}`);
+  });
+
+  test('choosing with the mouse never takes focus from the field', async ({ page }) => {
+    await page.locator('#textarea').fill(TEXT);
+    await page.locator('#textarea').evaluate((el) => {
+      (window as unknown as { blurs: number }).blurs = 0;
+      el.addEventListener('blur', () => (window as unknown as { blurs: number }).blurs++);
+    });
+    await page.locator('corretto-button').click();
+    await option(page, /More formal/).click();
+    await expect(page.locator('#textarea')).toHaveValue(`[formal] ${TEXT}`);
+    await panel(page).getByRole('button', { name: 'Undo' }).click();
+    await expect(page.locator('#textarea')).toHaveValue(TEXT);
+    expect(await page.evaluate(() => (window as unknown as { blurs: number }).blurs)).toBe(0);
   });
 
   test('Cancel during loading closes and ignores the late result', async ({ page }) => {
