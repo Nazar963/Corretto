@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Corretto fixture: editor that syncs its selection late and restores it on focus</title>
+  <style>#lag { width: 520px; min-height: 60px; border: 1px solid #999; padding: 8px; white-space: pre-wrap; }</style>
+</head>
+<body>
+  <!-- Like editors that read the DOM selection on the next frame after "selectionchange"
+       (observed as "appends instead of replaces" on WhatsApp Web). Inserts and pastes go
+       through the editor's own model at the selection it last synced. -->
+  <div id="lag" contenteditable="true"></div>
+  <script>
+    const el = document.getElementById('lag');
+    const model = (window.lagModel = { value: '', start: 0, end: 0, edits: 0 });
+    const render = () => {
+      el.textContent = model.value;
+      const node = el.firstChild;
+      if (!node) return;
+      const range = document.createRange();
+      range.setStart(node, model.start);
+      range.setEnd(node, model.end);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    };
+    const insert = (text) => {
+      model.value = model.value.slice(0, model.start) + text + model.value.slice(model.end);
+      model.start = model.end = model.start + text.length;
+      model.edits++;
+      render();
+    };
+    document.addEventListener('selectionchange', () => {
+      requestAnimationFrame(() => {
+        const sel = getSelection();
+        if (!sel.rangeCount || !el.contains(sel.anchorNode)) return;
+        const r = sel.getRangeAt(0);
+        const offset = (node, off) => (node === el ? (off === 0 ? 0 : model.value.length) : off);
+        model.start = Math.min(offset(r.startContainer, r.startOffset), model.value.length);
+        model.end = Math.min(offset(r.endContainer, r.endOffset), model.value.length);
+      });
+    });
+    el.addEventListener('beforeinput', (event) => {
+      event.preventDefault();
+      if (event.inputType === 'insertText' && event.data) insert(event.data);
+    });
+    // Like WhatsApp Web: when the editor regains focus it puts its own (last known) cursor
+    // back, a frame later, overriding any selection made in between.
+    el.addEventListener('focus', () => {
+      const restore = { start: model.start, end: model.end, edits: model.edits };
+      requestAnimationFrame(() => {
+        // Only when nothing was typed meanwhile: put the remembered cursor back.
+        if (model.edits !== restore.edits) return;
+        model.start = restore.start;
+        model.end = restore.end;
+        render();
+      });
+    });
+    // Like Lexical: DOM changes that did not go through the model are put back.
+    el.addEventListener('input', () => {
+      if (el.textContent !== model.value) render();
+    });
+    el.addEventListener('paste', (event) => {
+      event.preventDefault();
+      insert(event.clipboardData.getData('text/plain'));
+    });
+  </script>
+</body>
+</html>
